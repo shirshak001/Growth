@@ -602,7 +602,7 @@ const Dashboard = () => {
               )}
 
               {/* Add Task Form with Planned Hours input */}
-              <form onSubmit={handleAddTask} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <form onSubmit={handleAddTask} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <input
                     type="text"
@@ -610,15 +610,18 @@ const Dashboard = () => {
                     placeholder="New habit or task title..."
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
+                    style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
                     required
                   />
                 </div>
-                <div className="flex gap-12 align-center flex-wrap">
-                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
-                    <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Category:</label>
+                
+                {/* 2-column grid for inputs to keep layout clean and wide */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Category</label>
                     <select
                       className="form-input"
-                      style={{ padding: '4px 8px', width: 'auto', fontSize: '12px' }}
+                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
                       value={newTaskCategory}
                       onChange={(e) => setNewTaskCategory(e.target.value)}
                     >
@@ -628,41 +631,46 @@ const Dashboard = () => {
                       <option value="practice">Practice</option>
                     </select>
                   </div>
-                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
-                    <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Due Time:</label>
+                  
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Due Time</label>
                     <input
                       type="time"
                       className="form-input"
-                      style={{ padding: '4px 8px', width: 'auto', fontSize: '12px' }}
+                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
                       value={newTaskDueTime}
                       onChange={(e) => setNewTaskDueTime(e.target.value)}
                     />
                   </div>
-                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
-                    <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Plan (hrs):</label>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Planned Hours</label>
                     <input
                       type="number"
                       step="0.1"
                       min="0.1"
                       className="form-input"
                       placeholder="e.g. 1.5"
-                      style={{ padding: '4px 8px', width: '70px', fontSize: '12px' }}
+                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
                       value={newTaskPlannedHours}
                       onChange={(e) => setNewTaskPlannedHours(e.target.value)}
                     />
                   </div>
-                  <label className="flex align-center gap-6" style={{ fontSize: '12px', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={newTaskIsMandatory}
-                      onChange={(e) => setNewTaskIsMandatory(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span>Mandatory</span>
-                  </label>
-                  <button type="submit" className="btn btn-primary" style={{ padding: '6px 12px', marginLeft: 'auto', fontSize: '12px' }}>
-                    <Plus size={12} /> Add Task
-                  </button>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px' }}>
+                    <label className="flex align-center gap-8" style={{ fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
+                      <input
+                        type="checkbox"
+                        checked={newTaskIsMandatory}
+                        onChange={(e) => setNewTaskIsMandatory(e.target.checked)}
+                        style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                      />
+                      <span>Mandatory Routine</span>
+                    </label>
+                    <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px' }}>
+                      <Plus size={14} /> Add Task
+                    </button>
+                  </div>
                 </div>
               </form>
 

@@ -13,7 +13,7 @@ import {
   Legend, 
   Filler 
 } from 'chart.js';
-import { Sparkles, TrendingUp, RefreshCw, Info } from 'lucide-react';
+import { Sparkles, TrendingUp, RefreshCw, Info, Calendar, Clock, BarChart2 } from 'lucide-react';
 
 ChartJS.register(
   CategoryScale, 
@@ -39,6 +39,7 @@ const Analytics = () => {
   const [geminiAdvice, setGeminiAdvice] = useState('');
   const [burnoutProb, setBurnoutProb] = useState(null);
   
+  const [activeSubTab, setActiveSubTab] = useState('compliance');
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -129,6 +130,7 @@ const Analytics = () => {
 
   const sleepChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       y: {
         type: 'linear',
@@ -185,6 +187,7 @@ const Analytics = () => {
 
   const taskChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       y: {
         min: 0,
@@ -220,6 +223,7 @@ const Analytics = () => {
 
   const weightChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       y: {
         ticks: { color: '#6b7280' },
@@ -277,6 +281,7 @@ const Analytics = () => {
 
   const hoursChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       y: {
         ticks: { color: '#6b7280' },
@@ -331,6 +336,7 @@ const Analytics = () => {
 
   const correlationChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       y: {
         type: 'linear',
@@ -359,7 +365,7 @@ const Analytics = () => {
   };
 
   return (
-    <div className="page-container" style={{ overflowY: 'auto' }}>
+    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
       {/* Overview stats header */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
@@ -372,164 +378,195 @@ const Analytics = () => {
         </button>
       </div>
 
+      {/* Sub-tab Navigation to fit everything without vertical scroll on desktop */}
+      <div className="flex gap-8" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', flexShrink: 0 }}>
+        <button 
+          onClick={() => setActiveSubTab('compliance')} 
+          className={`btn ${activeSubTab === 'compliance' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ padding: '6px 16px', fontSize: '12px', borderRadius: '6px' }}
+        >
+          <Calendar size={12} /> Compliance & Sleep
+        </button>
+        <button 
+          onClick={() => setActiveSubTab('focus')} 
+          className={`btn ${activeSubTab === 'focus' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ padding: '6px 16px', fontSize: '12px', borderRadius: '6px' }}
+        >
+          <Clock size={12} /> Time & Focus
+        </button>
+        <button 
+          onClick={() => setActiveSubTab('fitness')} 
+          className={`btn ${activeSubTab === 'fitness' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ padding: '6px 16px', fontSize: '12px', borderRadius: '6px' }}
+        >
+          <BarChart2 size={12} /> Fitness & AI Coach
+        </button>
+      </div>
+
       {loading ? (
         <div className="card text-center" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: 'var(--text-secondary)' }}>Compiling analytics dataset...</span>
         </div>
       ) : (
-        <div className="inner-column" style={{ gap: '20px' }}>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           
-          {/* Row 1: Habit Compliance & Sleep Trend */}
-          <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
-            
-            {/* Task completion rate card */}
-            <div className="card" style={{ height: '300px' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Daily Task Compliance (Last 7 Days)</span>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                {tasks.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                    No tasks defined. Tracking compliance requires task logs.
-                  </div>
-                ) : (
-                  <Bar data={taskChartData} options={{ ...taskChartOptions, maintainAspectRatio: false }} />
-                )}
-              </div>
-            </div>
-
-            {/* Sleep trend card */}
-            <div className="card" style={{ height: '300px' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Sleep Cycles & Quality</span>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                {sleepLogs.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                    No sleep history available. Log sleep on the dashboard to visualize.
-                  </div>
-                ) : (
-                  <Line data={sleepChartData} options={{ ...sleepChartOptions, maintainAspectRatio: false }} />
-                )}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Row 2: Reality scheduling vs Distraction metrics */}
-          <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
-            
-            {/* Planned vs Actual hours */}
-            <div className="card" style={{ height: '300px' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Planned vs Actual Workload (Reality Check)</span>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                <Bar data={hoursChartData} options={{ ...hoursChartOptions, maintainAspectRatio: false }} />
-              </div>
-            </div>
-
-            {/* Distraction minutes correlation */}
-            <div className="card" style={{ height: '300px' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Digital Distraction vs Task Completion Correlation</span>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                <Line data={correlationChartData} options={{ ...correlationChartOptions, maintainAspectRatio: false }} />
-              </div>
-            </div>
-
-          </div>
-
-          {/* Row 3: Weight Trajectory & AI Insights / Burnout Risk */}
-          <div className="grid-2" style={{ gap: '20px', minHeight: '350px' }}>
-            
-            {/* Weight trend card */}
-            <div className="card" style={{ height: '350px' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Weight Trajectory Chart</span>
-              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                {weightLogs.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-                    No weights logged. Add weight inputs on the Fitness page.
-                  </div>
-                ) : (
-                  <Line data={weightChartData} options={{ ...weightChartOptions, maintainAspectRatio: false }} />
-                )}
-              </div>
-            </div>
-
-            {/* AI Coach card with Burnout risk gauge */}
-            <div className="card" style={{ height: '350px', display: 'flex', flexDirection: 'column' }}>
-              <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px', flexShrink: 0 }}>
-                <span className="flex align-center gap-8">
-                  <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights & Burnout Risk
-                </span>
-                {aiLoading && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Processing...</span>}
-              </span>
-
-              {/* Burnout Probability Gauge block */}
-              {burnoutProb !== null && (
-                <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px', flexShrink: 0 }}>
-                  <div style={{ position: 'relative', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="50" height="50" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-                      <path
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="rgba(255, 255, 255, 0.05)"
-                        strokeWidth="3.5"
-                      />
-                      <path
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke={burnoutProb > 65 ? '#ef4444' : '#f59e0b'}
-                        strokeWidth="3.5"
-                        strokeDasharray={`${burnoutProb}, 100`}
-                      />
-                    </svg>
-                    <span style={{ position: 'absolute', fontSize: '11px', fontWeight: 700, color: burnoutProb > 65 ? '#ef4444' : '#f59e0b' }}>
-                      {burnoutProb}%
-                    </span>
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Burnout Probability Index</h4>
-                    <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
-                      {burnoutProb > 65 ? 'High risk detected. Workload auto-adjust triggered.' : 'Low-to-moderate risk. Keep standard workload scheduling.'}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-16" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-                
-                {/* Local engine list */}
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
-                  <span className="form-label" style={{ fontSize: '10px', marginBottom: '4px', flexShrink: 0 }}>Actionable Diagnostics</span>
-                  {aiSuggestions.map((s, idx) => (
-                    <div key={idx} className={`ai-suggestion-card priority-${s.priority}`} style={{ padding: '10px', borderRadius: '6px' }}>
-                      <div className="ai-suggestion-header" style={{ fontSize: '12px', marginBottom: '4px' }}>
-                        <span>{s.title}</span>
-                        <span style={{ 
-                          fontSize: '8px', 
-                          textTransform: 'uppercase', 
-                          color: s.priority === 'high' ? 'var(--color-danger)' : s.priority === 'medium' ? 'var(--color-warning)' : 'var(--color-primary)' 
-                        }}>
-                          {s.priority}
-                        </span>
-                      </div>
-                      <div className="ai-suggestion-desc" style={{ fontSize: '11px', lineHeight: 1.4 }}>{s.description}</div>
+          {/* Tab 1: Routines & Sleep Compliance */}
+          {activeSubTab === 'compliance' && (
+            <div className="grid-2" style={{ gap: '20px', flex: 1, minHeight: 0 }}>
+              
+              {/* Task completion rate card */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Daily Task Compliance (Last 7 Days)</span>
+                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                  {tasks.length === 0 ? (
+                    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                      No tasks defined. Tracking compliance requires task logs.
                     </div>
-                  ))}
-                </div>
-
-                {/* Gemini advice */}
-                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <span className="form-label" style={{ fontSize: '10px', marginBottom: '4px', flexShrink: 0 }}>Gemini AI Analysis</span>
-                  {geminiAdvice ? (
-                    <p className="ai-coach-text" style={{ fontSize: '11px', margin: 0, lineHeight: 1.5 }}>{geminiAdvice}</p>
                   ) : (
-                    <div style={{ display: 'flex', gap: '6px', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                      <Info size={12} style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <p>Provide a Google Gemini API Key in the Settings page to unlock deep LLM summaries of your routines.</p>
-                    </div>
+                    <Bar data={taskChartData} options={taskChartOptions} />
                   )}
                 </div>
-
               </div>
-            </div>
 
-          </div>
+              {/* Sleep trend card */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Sleep Cycles & Quality</span>
+                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                  {sleepLogs.length === 0 ? (
+                    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                      No sleep history available. Log sleep on the dashboard to visualize.
+                    </div>
+                  ) : (
+                    <Line data={sleepChartData} options={sleepChartOptions} />
+                  )}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 2: Time & Focus */}
+          {activeSubTab === 'focus' && (
+            <div className="grid-2" style={{ gap: '20px', flex: 1, minHeight: 0 }}>
+              
+              {/* Planned vs Actual hours */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Planned vs Actual Workload (Reality Check)</span>
+                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                  <Bar data={hoursChartData} options={hoursChartOptions} />
+                </div>
+              </div>
+
+              {/* Distraction minutes correlation */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Digital Distraction vs Task Completion Correlation</span>
+                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                  <Line data={correlationChartData} options={correlationChartOptions} />
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 3: Weight & AI Coaching / Burnout */}
+          {activeSubTab === 'fitness' && (
+            <div className="grid-2" style={{ gap: '20px', flex: 1, minHeight: 0 }}>
+              
+              {/* Weight trend card */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Weight Trajectory Chart</span>
+                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                  {weightLogs.length === 0 ? (
+                    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                      No weights logged. Add weight inputs on the Fitness page.
+                    </div>
+                  ) : (
+                    <Line data={weightChartData} options={weightChartOptions} />
+                  )}
+                </div>
+              </div>
+
+              {/* AI Coach card with Burnout risk gauge */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px', flexShrink: 0 }}>
+                  <span className="flex align-center gap-8">
+                    <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights & Burnout Risk
+                  </span>
+                  {aiLoading && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Processing...</span>}
+                </span>
+
+                {/* Burnout Probability Gauge block */}
+                {burnoutProb !== null && (
+                  <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px', flexShrink: 0 }}>
+                    <div style={{ position: 'relative', width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="46" height="46" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="rgba(255, 255, 255, 0.05)"
+                          strokeWidth="3.5"
+                        />
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke={burnoutProb > 65 ? '#ef4444' : '#f59e0b'}
+                          strokeWidth="3.5"
+                          strokeDasharray={`${burnoutProb}, 100`}
+                        />
+                      </svg>
+                      <span style={{ position: 'absolute', fontSize: '10px', fontWeight: 700, color: burnoutProb > 65 ? '#ef4444' : '#f59e0b' }}>
+                        {burnoutProb}%
+                      </span>
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Burnout Probability</h4>
+                      <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: '1px 0 0 0', lineHeight: '1.3' }}>
+                        {burnoutProb > 65 ? 'High risk. Schedule buffers and shift workouts.' : 'Safe index. Standard execution block maintained.'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-16" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                  
+                  {/* Local engine list */}
+                  <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
+                    <span className="form-label" style={{ fontSize: '9px', marginBottom: '4px', flexShrink: 0 }}>Diagnostics</span>
+                    {aiSuggestions.map((s, idx) => (
+                      <div key={idx} className={`ai-suggestion-card priority-${s.priority}`} style={{ padding: '8px 10px', borderRadius: '6px' }}>
+                        <div className="ai-suggestion-header" style={{ fontSize: '11px', marginBottom: '2px' }}>
+                          <span>{s.title}</span>
+                          <span style={{ 
+                            fontSize: '8px', 
+                            textTransform: 'uppercase', 
+                            color: s.priority === 'high' ? 'var(--color-danger)' : s.priority === 'medium' ? 'var(--color-warning)' : 'var(--color-primary)' 
+                          }}>
+                            {s.priority}
+                          </span>
+                        </div>
+                        <div className="ai-suggestion-desc" style={{ fontSize: '10px', lineHeight: 1.3 }}>{s.description}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Gemini advice */}
+                  <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span className="form-label" style={{ fontSize: '9px', marginBottom: '4px', flexShrink: 0 }}>Gemini AI Analysis</span>
+                    {geminiAdvice ? (
+                      <p className="ai-coach-text" style={{ fontSize: '10px', margin: 0, lineHeight: 1.4 }}>{geminiAdvice}</p>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '6px', fontSize: '10px', color: 'var(--text-secondary)', lineHeight: 1.3 }}>
+                        <Info size={12} style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <p>Provide a Google Gemini API Key in the Settings page to unlock deep LLM summaries of your routines.</p>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
       )}
 
