@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CheckSquare, Moon, Sun, Plus, Trash2, Award, Clock, Target, AlertCircle } from 'lucide-react';
+import { CheckSquare, Moon, Sun, Plus, Trash2, Award, Clock, Target, AlertCircle, Zap, Brain, BookOpen } from 'lucide-react';
 
 const Dashboard = () => {
   const { authFetch, user } = useAuth();
@@ -28,6 +28,29 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [tasks, setTasks] = useState([]);
   const [sleepLog, setSleepLog] = useState(null);
+
+  // AI Life Operator / Burnout states
+  const [lifeScore, setLifeScore] = useState(null);
+  const [burnoutProb, setBurnoutProb] = useState(null);
+  const [lifeOperatorSuggestion, setLifeOperatorSuggestion] = useState('');
+
+  // Procrastination breakdown states
+  const [activeMicroTask, setActiveMicroTask] = useState(null);
+  const [panicCountdown, setPanicCountdown] = useState(0);
+
+  // Crisis Recovery Mode state
+  const [crisisRecovery, setCrisisRecovery] = useState(false);
+  const [crisisCompleted, setCrisisCompleted] = useState({ water: false, study: false });
+
+  // Dopamine tracker states
+  const [instaMins, setInstaMins] = useState(0);
+  const [ytMins, setYtMins] = useState(0);
+  const [scrollMins, setScrollMins] = useState(0);
+  const [dopamineLog, setDopamineLog] = useState(null);
+
+  // Task execution hours states
+  const [newTaskPlannedHours, setNewTaskPlannedHours] = useState('');
+  const [taskActualHours, setTaskActualHours] = useState({});
   
   // Add task inputs
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -81,6 +104,34 @@ const Dashboard = () => {
           setWakeEnergy(3);
         }
       }
+
+      // Fetch dopamine logs
+      const dopRes = await authFetch('/routine/dopamine');
+      if (dopRes.ok) {
+        const dopLogs = await dopRes.json();
+        const todayDop = dopLogs.find(l => l.date === selectedDate);
+        if (todayDop) {
+          setDopamineLog(todayDop);
+          setInstaMins(todayDop.instagramMins || 0);
+          setYtMins(todayDop.youtubeMins || 0);
+          setScrollMins(todayDop.scrollingMins || 0);
+        } else {
+          setDopamineLog(null);
+          setInstaMins(0);
+          setYtMins(0);
+          setScrollMins(0);
+        }
+      }
+
+      // Fetch AI Suggestions (reload to calculate today's Life Score & operator briefing)
+      const aiRes = await authFetch('/ai/suggestions', { method: 'POST' });
+      if (aiRes.ok) {
+        const aiData = await aiRes.json();
+        setLifeScore(aiData.lifeScore);
+        setBurnoutProb(aiData.burnoutProb);
+        setLifeOperatorSuggestion(aiData.lifeOperatorSuggestion);
+      }
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -93,11 +144,15 @@ const Dashboard = () => {
   }, [selectedDate]);
 
   // Task Completion Toggle
-  const handleToggleTask = async (taskId) => {
+  const handleToggleTask = async (taskId, actualHrs) => {
     try {
+      const hrs = actualHrs !== undefined ? actualHrs : taskActualHours[taskId];
       const res = await authFetch(`/routine/tasks/${taskId}/toggle`, {
         method: 'PUT',
-        body: JSON.stringify({ date: selectedDate })
+        body: JSON.stringify({ 
+          date: selectedDate,
+          actualHours: hrs !== undefined && hrs !== '' ? Number(hrs) : undefined
+        })
       });
       if (res.ok) {
         const updated = await res.json();
@@ -120,7 +175,8 @@ const Dashboard = () => {
           title: newTaskTitle,
           isMandatory: newTaskIsMandatory,
           category: newTaskCategory,
-          dueTime: newTaskDueTime || undefined
+          dueTime: newTaskDueTime || undefined,
+          plannedHours: newTaskPlannedHours ? Number(newTaskPlannedHours) : undefined
         })
       });
       if (res.ok) {
@@ -130,6 +186,7 @@ const Dashboard = () => {
         setNewTaskIsMandatory(false);
         setNewTaskCategory('custom');
         setNewTaskDueTime('');
+        setNewTaskPlannedHours('');
       }
     } catch (error) {
       console.error('Error adding task:', error);
@@ -175,6 +232,62 @@ const Dashboard = () => {
     }
   };
 
+  // Handle Break Task with AI
+  const handleBreakTask = async (title) => {
+    try {
+      const res = await authFetch('/ai/break-task', {
+        method: 'POST',
+        body: JSON.stringify({ title })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setActiveMicroTask({
+          originalTask: title,
+          microStep: data.microStep
+        });
+        setPanicCountdown(120); // 2 minute countdown urgency system
+      }
+    } catch (e) {
+      console.error('Failed breaking task:', e);
+    }
+  };
+
+  // Timer for micro task panic countdown
+  useEffect(() => {
+    let interval = null;
+    if (panicCountdown > 0) {
+      interval = setInterval(() => {
+        setPanicCountdown(c => c - 1);
+      }, 1000);
+    } else if (panicCountdown === 0 && activeMicroTask) {
+      // Countdown expired, auto reset
+      setActiveMicroTask(null);
+    }
+    return () => clearInterval(interval);
+  }, [panicCountdown, activeMicroTask]);
+
+  // Log Dopamine Metrics
+  const handleLogDopamine = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await authFetch('/routine/dopamine', {
+        method: 'POST',
+        body: JSON.stringify({
+          date: selectedDate,
+          instagramMins: Number(instaMins),
+          youtubeMins: Number(ytMins),
+          scrollingMins: Number(scrollMins)
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDopamineLog(data);
+      }
+    } catch (error) {
+      console.error('Error logging dopamine tracker:', error);
+    }
+  };
+
   // Calculate percentages
   const activeTasks = tasks;
   const completedTasksToday = activeTasks.filter(t => t.completedDates?.includes(selectedDate));
@@ -183,9 +296,9 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ overflowY: 'auto' }}>
       
-      {/* Date Selector Header */}
+      {/* Date Selector Header with Life Score & Burnout indicators */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
         <div className="flex align-center gap-8">
           <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Selected Date:</span>
@@ -197,13 +310,55 @@ const Dashboard = () => {
             style={{ width: 'auto', padding: '4px 10px', fontSize: '13px' }}
           />
         </div>
-        <div className="flex align-center gap-8">
-          <Award size={16} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ fontSize: '13px', fontWeight: 600 }}>
-            {completionPercentage}% Tasks Completed Today
-          </span>
+        <div className="flex align-center gap-16">
+          {lifeScore !== null && (
+            <div className="flex align-center gap-8" style={{ borderRight: '1px solid var(--border-color)', paddingRight: '16px' }}>
+              <Brain size={14} style={{ color: 'var(--color-primary)' }} />
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Life Score:</span>
+              <span className="task-badge" style={{
+                background: lifeScore >= 80 ? 'var(--color-success-glow)' : lifeScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
+                color: lifeScore >= 80 ? 'var(--color-success)' : lifeScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
+                fontWeight: 700,
+                border: lifeScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : lifeScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+              }}>
+                {lifeScore} / 100
+              </span>
+            </div>
+          )}
+          {burnoutProb !== null && (
+            <div className="flex align-center gap-8" style={{ borderRight: '1px solid var(--border-color)', paddingRight: '16px' }}>
+              <AlertCircle size={14} style={{ color: burnoutProb > 60 ? 'var(--color-danger)' : 'var(--color-warning)' }} />
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Burnout Risk:</span>
+              <span className="task-badge" style={{
+                background: burnoutProb > 60 ? 'var(--color-danger-glow)' : 'var(--color-warning-glow)',
+                color: burnoutProb > 60 ? 'var(--color-danger)' : 'var(--color-warning)',
+                fontWeight: 700,
+                border: burnoutProb > 60 ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
+              }}>
+                {burnoutProb}%
+              </span>
+            </div>
+          )}
+          <div className="flex align-center gap-8">
+            <Award size={16} style={{ color: 'var(--color-primary)' }} />
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>
+              {completionPercentage}% Tasks Completed Today
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* AI Life Operator Workload Adjustment Briefing Card */}
+      {lifeOperatorSuggestion && (
+        <div className="card" style={{ flexShrink: 0, padding: '16px 24px', background: 'rgba(99, 102, 241, 0.04)', border: '1px dashed rgba(99, 102, 241, 0.3)' }}>
+          <div className="flex align-center gap-8" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <Brain size={12} /> AI Life OS Scheduler
+          </div>
+          <p style={{ fontSize: '13px', color: 'var(--text-primary)', marginTop: '6px', lineHeight: '1.4' }}>
+            {lifeOperatorSuggestion}
+          </p>
+        </div>
+      )}
 
       {/* Ultimate Goal Header Widget */}
       {user?.ultimateGoal?.title && (
@@ -263,11 +418,101 @@ const Dashboard = () => {
           </div>
 
           {/* Task Manager Card */}
-          <div className="card" style={{ flex: 1, minHeight: 0 }}>
-            <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px' }}>Tasks & Habits</span>
+          <div className="card" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <div className="card-title" style={{ fontSize: '13px', marginBottom: '12px', display: 'flex', width: '100%', alignItems: 'center' }}>
+              <span>Tasks & Habits</span>
+              <div className="flex align-center gap-12" style={{ marginLeft: 'auto' }}>
+                <label className="flex align-center gap-8" style={{ fontSize: '12px', cursor: 'pointer', color: crisisRecovery ? 'var(--color-warning)' : 'var(--text-secondary)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={crisisRecovery} 
+                    onChange={(e) => setCrisisRecovery(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>Crisis Recovery Mode</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Anti-Procrastination Engine Countdown Urgency Widget */}
+            {activeMicroTask && (
+              <div className="card" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: '12px', padding: '12px' }}>
+                <div className="flex justify-between align-center" style={{ marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-danger)', textTransform: 'uppercase' }}>
+                    Urgent Micro-Action (Bypass Procrastination)
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-danger)' }}>
+                    {Math.floor(panicCountdown / 60)}:{String(panicCountdown % 60).padStart(2, '0')}
+                  </span>
+                </div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {activeMicroTask.microStep}
+                </p>
+                <div className="flex gap-8" style={{ marginTop: '8px' }}>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ padding: '3px 8px', fontSize: '11px', background: 'var(--color-danger)', border: 'none' }}
+                    onClick={() => {
+                      const matchingTask = tasks.find(t => t.title === activeMicroTask.originalTask);
+                      if (matchingTask) {
+                        handleToggleTask(matchingTask.id);
+                      }
+                      setActiveMicroTask(null);
+                      setPanicCountdown(0);
+                    }}
+                  >
+                    Completed!
+                  </button>
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ padding: '3px 8px', fontSize: '11px' }}
+                    onClick={() => {
+                      setActiveMicroTask(null);
+                      setPanicCountdown(0);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             
-            <div className="task-section" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-              {activeTasks.length === 0 ? (
+            <div className="task-section" style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              {crisisRecovery ? (
+                <div className="task-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+                  <div className={`task-item ${crisisCompleted.water ? 'completed' : ''}`}>
+                    <div className="task-item-left">
+                      <label className="task-checkbox-wrapper">
+                        <input 
+                          type="checkbox" 
+                          checked={crisisCompleted.water} 
+                          onChange={() => setCrisisCompleted(prev => ({ ...prev, water: !prev.water }))}
+                          className="task-checkbox"
+                        />
+                      </label>
+                      <span className="task-text">Hydrate: Drink 1 glass of clean water</span>
+                      <span className="task-badge task-badge-mandatory">Recovery 1</span>
+                    </div>
+                  </div>
+                  <div className={`task-item ${crisisCompleted.study ? 'completed' : ''}`}>
+                    <div className="task-item-left">
+                      <label className="task-checkbox-wrapper">
+                        <input 
+                          type="checkbox" 
+                          checked={crisisCompleted.study} 
+                          onChange={() => setCrisisCompleted(prev => ({ ...prev, study: !prev.study }))}
+                          className="task-checkbox"
+                        />
+                      </label>
+                      <span className="task-text">Low-Activation Study: Sit at desk and study/work for exactly 5 minutes</span>
+                      <span className="task-badge task-badge-mandatory">Recovery 2</span>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
+                    Crisis Recovery Mode active. Routine tasks are hidden. Focus on hydrating and the 5-minute study buffer to restore cognitive stamina.
+                  </p>
+                </div>
+              ) : activeTasks.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
                   No tasks tracked yet. Add your first routine below.
                 </p>
@@ -276,37 +521,88 @@ const Dashboard = () => {
                   {activeTasks.map(task => {
                     const isCompleted = task.completedDates?.includes(selectedDate);
                     return (
-                      <div key={task.id} className={`task-item ${isCompleted ? 'completed' : ''}`}>
-                        <div className="task-item-left">
-                          <label className="task-checkbox-wrapper">
-                            <input 
-                              type="checkbox" 
-                              checked={isCompleted} 
-                              onChange={() => handleToggleTask(task.id)}
-                              className="task-checkbox"
-                            />
-                          </label>
-                          <span className="task-text">{task.title}</span>
-                          {task.dueTime && (
-                            <span className="flex align-center gap-4" style={{ fontSize: '11px', color: 'var(--color-warning)', background: 'var(--color-warning-glow)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                              <Clock size={10} /> {task.dueTime}
+                      <div key={task.id} className={`task-item ${isCompleted ? 'completed' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px' }}>
+                        <div className="task-item-left" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            <label className="task-checkbox-wrapper">
+                              <input 
+                                type="checkbox" 
+                                checked={isCompleted} 
+                                onChange={() => handleToggleTask(task.id)}
+                                className="task-checkbox"
+                              />
+                            </label>
+                            <span className="task-text" style={{ fontSize: '13px', fontWeight: 500 }}>{task.title}</span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {task.dueTime && (
+                              <span className="flex align-center gap-4" style={{ fontSize: '10px', color: 'var(--color-warning)', background: 'var(--color-warning-glow)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                                <Clock size={10} /> {task.dueTime}
+                              </span>
+                            )}
+                            <span className={`task-badge ${task.isMandatory ? 'task-badge-mandatory' : 'task-badge-custom'}`} style={{ fontSize: '10px' }}>
+                              {task.isMandatory ? 'Mandatory' : 'Custom'}
                             </span>
-                          )}
-                          <span className={`task-badge ${task.isMandatory ? 'task-badge-mandatory' : 'task-badge-custom'}`}>
-                            {task.isMandatory ? 'Mandatory' : 'Custom'}
-                          </span>
+                            <button onClick={() => handleDeleteTask(task.id)} className="btn-icon" title="Remove Habit" style={{ padding: '4px' }}>
+                              <Trash2 size={12} style={{ color: 'var(--color-danger)' }} />
+                            </button>
+                          </div>
                         </div>
-                        <button onClick={() => handleDeleteTask(task.id)} className="btn-icon" title="Remove Habit">
-                          <Trash2 size={14} style={{ color: 'var(--color-danger)' }} />
-                        </button>
+
+                        {/* Planned vs Actual hours logging block (Reality-Based Scheduling) */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {task.plannedHours !== null && (
+                              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                                Planned: <strong>{task.plannedHours}h</strong>
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Actual:</span>
+                                <input 
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  style={{ width: '45px', padding: '1px 4px', fontSize: '11px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '3px' }}
+                                  value={taskActualHours[task.id] !== undefined ? taskActualHours[task.id] : (task.actualHoursLogs?.[selectedDate] || '')}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTaskActualHours(prev => ({ ...prev, [task.id]: val }));
+                                  }}
+                                  onBlur={() => handleToggleTask(task.id, taskActualHours[task.id])}
+                                  placeholder="hrs"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {!isCompleted && (
+                            <button 
+                              onClick={() => handleBreakTask(task.title)}
+                              style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: 'var(--color-primary)', 
+                                fontSize: '11px', 
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                padding: '2px 4px'
+                              }}
+                            >
+                              Break Down with AI
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               )}
 
-              {/* Add Task Form */}
-              <form onSubmit={handleAddTask} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Add Task Form with Planned Hours input */}
+              <form onSubmit={handleAddTask} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <input
                     type="text"
@@ -317,12 +613,12 @@ const Dashboard = () => {
                     required
                   />
                 </div>
-                <div className="flex gap-16 align-center">
-                  <div className="flex align-center gap-8" style={{ fontSize: '13px' }}>
+                <div className="flex gap-12 align-center flex-wrap">
+                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
                     <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Category:</label>
                     <select
                       className="form-input"
-                      style={{ padding: '6px 12px', width: 'auto' }}
+                      style={{ padding: '4px 8px', width: 'auto', fontSize: '12px' }}
                       value={newTaskCategory}
                       onChange={(e) => setNewTaskCategory(e.target.value)}
                     >
@@ -332,27 +628,40 @@ const Dashboard = () => {
                       <option value="practice">Practice</option>
                     </select>
                   </div>
-                  <div className="flex align-center gap-8" style={{ fontSize: '13px' }}>
+                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
                     <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Due Time:</label>
                     <input
                       type="time"
                       className="form-input"
-                      style={{ padding: '6px 12px', width: 'auto' }}
+                      style={{ padding: '4px 8px', width: 'auto', fontSize: '12px' }}
                       value={newTaskDueTime}
                       onChange={(e) => setNewTaskDueTime(e.target.value)}
                     />
                   </div>
-                  <label className="flex align-center gap-8" style={{ fontSize: '13px', cursor: 'pointer' }}>
+                  <div className="flex align-center gap-6" style={{ fontSize: '12px' }}>
+                    <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Plan (hrs):</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      className="form-input"
+                      placeholder="e.g. 1.5"
+                      style={{ padding: '4px 8px', width: '70px', fontSize: '12px' }}
+                      value={newTaskPlannedHours}
+                      onChange={(e) => setNewTaskPlannedHours(e.target.value)}
+                    />
+                  </div>
+                  <label className="flex align-center gap-6" style={{ fontSize: '12px', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={newTaskIsMandatory}
                       onChange={(e) => setNewTaskIsMandatory(e.target.checked)}
                       style={{ cursor: 'pointer' }}
                     />
-                    <span>Mandatory Routine</span>
+                    <span>Mandatory</span>
                   </label>
-                  <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', marginLeft: 'auto' }}>
-                    <Plus size={14} /> Add Task
+                  <button type="submit" className="btn btn-primary" style={{ padding: '6px 12px', marginLeft: 'auto', fontSize: '12px' }}>
+                    <Plus size={12} /> Add Task
                   </button>
                 </div>
               </form>
@@ -362,7 +671,7 @@ const Dashboard = () => {
 
         </div>
 
-        {/* Right Side: Sleep Logging */}
+        {/* Right Side: Sleep Logging & Dopamine Logging */}
         <div className="inner-column" style={{ gap: '24px' }}>
           
           <div className="card">
@@ -486,6 +795,75 @@ const Dashboard = () => {
                     </span>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* Dopamine Distraction Tracker */}
+          <div className="card">
+            <div className="card-title">
+              <span>Dopamine Tracker</span>
+              <Brain size={16} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            
+            <form onSubmit={handleLogDopamine} className="task-section">
+              <div className="sleep-inputs">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Instagram (mins)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-input"
+                    value={instaMins}
+                    onChange={(e) => setInstaMins(Number(e.target.value))}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">YouTube (mins)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-input"
+                    value={ytMins}
+                    onChange={(e) => setYtMins(Number(e.target.value))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Other Scrolling / Feed (mins)</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input"
+                  value={scrollMins}
+                  onChange={(e) => setScrollMins(Number(e.target.value))}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-secondary w-full">
+                <Brain size={14} /> Log Screen Time
+              </button>
+            </form>
+
+            {dopamineLog && (
+              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', fontSize: '13px' }}>
+                <div className="flex justify-between" style={{ marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Total Screen Time:</span>
+                  <span style={{ fontWeight: 600 }}>{dopamineLog.totalMinutes} Mins</span>
+                </div>
+                <div className="flex justify-between align-center">
+                  <span style={{ color: 'var(--text-secondary)' }}>Focus Score:</span>
+                  <span className="task-badge" style={{
+                    background: dopamineLog.dopamineScore >= 80 ? 'var(--color-success-glow)' : dopamineLog.dopamineScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
+                    color: dopamineLog.dopamineScore >= 80 ? 'var(--color-success)' : dopamineLog.dopamineScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
+                    fontWeight: 700,
+                    border: dopamineLog.dopamineScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : dopamineLog.dopamineScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+                  }}>
+                    {dopamineLog.dopamineScore} / 100
+                  </span>
+                </div>
               </div>
             )}
           </div>

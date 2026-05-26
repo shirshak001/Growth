@@ -34,8 +34,10 @@ const Analytics = () => {
   const [tasks, setTasks] = useState([]);
   const [fitnessLogs, setFitnessLogs] = useState([]);
   const [moodLogs, setMoodLogs] = useState([]);
+  const [dopamineLogs, setDopamineLogs] = useState([]);
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [geminiAdvice, setGeminiAdvice] = useState('');
+  const [burnoutProb, setBurnoutProb] = useState(null);
   
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
@@ -47,7 +49,6 @@ const Analytics = () => {
       // Fetch Sleep logs
       const sleepRes = await authFetch('/routine/sleep');
       const sleepData = await sleepRes.json();
-      // Reverse logs to chronological order for charts
       setSleepLogs([...sleepData].reverse());
 
       // Fetch Tasks
@@ -65,6 +66,13 @@ const Analytics = () => {
       const moodData = await moodRes.json();
       setMoodLogs([...moodData].reverse());
 
+      // Fetch Dopamine logs
+      const dopRes = await authFetch('/routine/dopamine');
+      if (dopRes.ok) {
+        const dopData = await dopRes.json();
+        setDopamineLogs([...dopData].reverse());
+      }
+
     } catch (error) {
       console.error('Error loading analytics:', error);
     } finally {
@@ -80,6 +88,7 @@ const Analytics = () => {
         const data = await res.json();
         setAiSuggestions(data.localSuggestions || []);
         setGeminiAdvice(data.geminiAdvice || '');
+        setBurnoutProb(data.burnoutProb);
       }
     } catch (error) {
       console.error('Error loading AI suggestions:', error);
@@ -226,8 +235,131 @@ const Analytics = () => {
     }
   };
 
+  // 4. DATA PREPARATION: Planned vs Actual Study Hours (last 7 days)
+  const plannedHoursData = dateLabels.map(date => {
+    let plannedSum = 0;
+    let actualSum = 0;
+    tasks.forEach(task => {
+      if (task.plannedHours !== null && task.plannedHours !== undefined) {
+        plannedSum += Number(task.plannedHours);
+      }
+      if (task.completedDates?.includes(date)) {
+        const actualHrs = task.actualHoursLogs?.[date];
+        if (actualHrs !== undefined && actualHrs !== null) {
+          actualSum += Number(actualHrs);
+        }
+      }
+    });
+    return { planned: Math.round(plannedSum * 10) / 10, actual: Math.round(actualSum * 10) / 10 };
+  });
+
+  const hoursChartData = {
+    labels: dateLabels.map(d => d.slice(5)),
+    datasets: [
+      {
+        label: 'Planned hours',
+        data: plannedHoursData.map(d => d.planned),
+        backgroundColor: 'rgba(99, 102, 241, 0.4)',
+        borderColor: 'var(--color-primary)',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'Actual hours logged',
+        data: plannedHoursData.map(d => d.actual),
+        backgroundColor: 'rgba(16, 185, 129, 0.65)',
+        borderColor: 'var(--color-success)',
+        borderWidth: 1,
+        borderRadius: 4
+      }
+    ]
+  };
+
+  const hoursChartOptions = {
+    responsive: true,
+    scales: {
+      y: {
+        ticks: { color: '#6b7280' },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+        title: { display: true, text: 'Hours', color: '#9ca3af' }
+      },
+      x: {
+        ticks: { color: '#6b7280' },
+        grid: { display: false }
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#f3f4f6' } }
+    }
+  };
+
+  // 5. DATA PREPARATION: Dopamine distraction correlation chart (last 7 days)
+  const dopamineCorrelationData = dateLabels.map(date => {
+    const log = dopamineLogs.find(l => l.date === date);
+    const totalScreenTime = log ? log.totalMinutes : 0;
+    const activeTasks = tasks;
+    let completionRate = 0;
+    if (activeTasks.length > 0) {
+      const completed = activeTasks.filter(t => t.completedDates?.includes(date)).length;
+      completionRate = Math.round((completed / activeTasks.length) * 100);
+    }
+    return { screenTime: totalScreenTime, compliance: completionRate };
+  });
+
+  const correlationChartData = {
+    labels: dateLabels.map(d => d.slice(5)),
+    datasets: [
+      {
+        label: 'Distraction Minutes',
+        data: dopamineCorrelationData.map(d => d.screenTime),
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0.3,
+        fill: true,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Compliance rate %',
+        data: dopamineCorrelationData.map(d => d.compliance),
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.05)',
+        tension: 0.3,
+        yAxisID: 'y1',
+      }
+    ]
+  };
+
+  const correlationChartOptions = {
+    responsive: true,
+    scales: {
+      y: {
+        type: 'linear',
+        position: 'left',
+        title: { display: true, text: 'Distraction (Mins)', color: '#9ca3af' },
+        ticks: { color: '#6b7280' },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+      },
+      y1: {
+        type: 'linear',
+        position: 'right',
+        min: 0,
+        max: 100,
+        title: { display: true, text: 'Completion %', color: '#9ca3af' },
+        ticks: { color: '#6b7280' },
+        grid: { drawOnChartArea: false }
+      },
+      x: {
+        ticks: { color: '#6b7280' },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#f3f4f6' } }
+    }
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ overflowY: 'auto' }}>
       
       {/* Overview stats header */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
@@ -245,12 +377,13 @@ const Analytics = () => {
           <span style={{ color: 'var(--text-secondary)' }}>Compiling analytics dataset...</span>
         </div>
       ) : (
-        <div className="inner-column">
-          {/* Row 1: Habits & Sleep Charts */}
-          <div className="grid-2" style={{ gap: '20px', flex: '1.1', minHeight: 0 }}>
+        <div className="inner-column" style={{ gap: '20px' }}>
+          
+          {/* Row 1: Habit Compliance & Sleep Trend */}
+          <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
             
             {/* Task completion rate card */}
-            <div className="card" style={{ height: '100%' }}>
+            <div className="card" style={{ height: '300px' }}>
               <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Daily Task Compliance (Last 7 Days)</span>
               <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {tasks.length === 0 ? (
@@ -264,7 +397,7 @@ const Analytics = () => {
             </div>
 
             {/* Sleep trend card */}
-            <div className="card" style={{ height: '100%' }}>
+            <div className="card" style={{ height: '300px' }}>
               <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Sleep Cycles & Quality</span>
               <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {sleepLogs.length === 0 ? (
@@ -279,11 +412,32 @@ const Analytics = () => {
 
           </div>
 
-          {/* Row 2: Weight Chart & AI Coach */}
-          <div className="grid-2" style={{ gap: '20px', flex: '1', minHeight: 0 }}>
+          {/* Row 2: Reality scheduling vs Distraction metrics */}
+          <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
+            
+            {/* Planned vs Actual hours */}
+            <div className="card" style={{ height: '300px' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Planned vs Actual Workload (Reality Check)</span>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                <Bar data={hoursChartData} options={{ ...hoursChartOptions, maintainAspectRatio: false }} />
+              </div>
+            </div>
+
+            {/* Distraction minutes correlation */}
+            <div className="card" style={{ height: '300px' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Digital Distraction vs Task Completion Correlation</span>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                <Line data={correlationChartData} options={{ ...correlationChartOptions, maintainAspectRatio: false }} />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Row 3: Weight Trajectory & AI Insights / Burnout Risk */}
+          <div className="grid-2" style={{ gap: '20px', minHeight: '350px' }}>
             
             {/* Weight trend card */}
-            <div className="card" style={{ height: '100%' }}>
+            <div className="card" style={{ height: '350px' }}>
               <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Weight Trajectory Chart</span>
               <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {weightLogs.length === 0 ? (
@@ -296,14 +450,46 @@ const Analytics = () => {
               </div>
             </div>
 
-            {/* AI Coach card */}
-            <div className="card" style={{ height: '100%' }}>
+            {/* AI Coach card with Burnout risk gauge */}
+            <div className="card" style={{ height: '350px', display: 'flex', flexDirection: 'column' }}>
               <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px', flexShrink: 0 }}>
                 <span className="flex align-center gap-8">
-                  <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights
+                  <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights & Burnout Risk
                 </span>
                 {aiLoading && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Processing...</span>}
               </span>
+
+              {/* Burnout Probability Gauge block */}
+              {burnoutProb !== null && (
+                <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px', flexShrink: 0 }}>
+                  <div style={{ position: 'relative', width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="50" height="50" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="rgba(255, 255, 255, 0.05)"
+                        strokeWidth="3.5"
+                      />
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke={burnoutProb > 65 ? '#ef4444' : '#f59e0b'}
+                        strokeWidth="3.5"
+                        strokeDasharray={`${burnoutProb}, 100`}
+                      />
+                    </svg>
+                    <span style={{ position: 'absolute', fontSize: '11px', fontWeight: 700, color: burnoutProb > 65 ? '#ef4444' : '#f59e0b' }}>
+                      {burnoutProb}%
+                    </span>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Burnout Probability Index</h4>
+                    <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+                      {burnoutProb > 65 ? 'High risk detected. Workload auto-adjust triggered.' : 'Low-to-moderate risk. Keep standard workload scheduling.'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-16" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 

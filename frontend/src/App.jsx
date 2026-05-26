@@ -7,11 +7,13 @@ import Fitness from './pages/Fitness';
 import SelfDevelopment from './pages/SelfDevelopment';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
-import { LogOut } from 'lucide-react';
+import { LogOut, Zap } from 'lucide-react';
+import StudyStrategist from './pages/StudyStrategist';
 
 const NavigationContainer = () => {
   const { user, loading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [lowDopamineMode, setLowDopamineMode] = useState(false);
 
   if (loading) {
     return (
@@ -43,6 +45,8 @@ const NavigationContainer = () => {
         return <Fitness />;
       case 'mindset':
         return <SelfDevelopment />;
+      case 'strategist':
+        return <StudyStrategist />;
       case 'analytics':
         return <Analytics />;
       case 'settings':
@@ -57,6 +61,7 @@ const NavigationContainer = () => {
       case 'dashboard': return 'Daily Dashboard & Routines';
       case 'fitness': return 'Fitness Metrics & Hydration';
       case 'mindset': return 'Mindset & Self-Development';
+      case 'strategist': return 'AI Study Strategist & Roadmap';
       case 'analytics': return 'Performance Charts & AI Insights';
       case 'settings': return 'Profile Configuration';
       default: return 'Dashboard';
@@ -64,7 +69,7 @@ const NavigationContainer = () => {
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${lowDopamineMode ? 'low-dopamine-mode' : ''}`}>
       {/* Sidebar Navigation */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
@@ -78,6 +83,19 @@ const NavigationContainer = () => {
             <span className="session-name" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               Session: <strong>{user.name}</strong>
             </span>
+            <button 
+              onClick={() => setLowDopamineMode(!lowDopamineMode)} 
+              className={`btn-icon ${lowDopamineMode ? 'active' : ''}`} 
+              title="Toggle Low-Dopamine Focus Mode"
+              style={{ 
+                padding: '6px', 
+                color: lowDopamineMode ? 'var(--color-warning)' : 'var(--text-secondary)',
+                backgroundColor: lowDopamineMode ? 'var(--color-warning-glow)' : 'transparent',
+                border: lowDopamineMode ? '1px solid rgba(245, 158, 11, 0.2)' : 'none'
+              }}
+            >
+              <Zap size={14} />
+            </button>
             <button onClick={logout} className="btn-icon" title="Sign Out" style={{ padding: '6px' }}>
               <LogOut size={14} style={{ color: 'var(--color-danger)' }} />
             </button>

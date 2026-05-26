@@ -202,6 +202,7 @@ export const getAISuggestions = async (req, res) => {
   const tasks = db.find('tasks', t => t.userId === userId && t.isActive !== false);
   const fitnessLogs = db.find('fitnessLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
   const moodLogs = db.find('moodLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
+  const dopamineLogs = db.find('dopamineLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
 
   const profile = {
     height: user.height,
@@ -217,6 +218,74 @@ export const getAISuggestions = async (req, res) => {
   const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
   let geminiAdvice = '';
   
+  // Resolve today's date string
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todaySleepLog = sleepLogs.find(l => l.date === todayStr);
+  const todayFitnessLog = fitnessLogs.find(l => l.date === todayStr);
+  const todayMoodLog = moodLogs.find(l => l.date === todayStr);
+  const todayDopamineLog = dopamineLogs.find(l => l.date === todayStr);
+
+  // 1. Calculate Life Score
+  const sleepComponent = todaySleepLog ? (todaySleepLog.sleepScore || todaySleepLog.quality * 20) : 70;
+  
+  const completedToday = tasks.filter(t => t.completedDates?.includes(todayStr)).length;
+  const taskComponent = tasks.length > 0 ? (completedToday / tasks.length) * 100 : 80;
+  
+  const waterComponent = todayFitnessLog ? Math.min(100, ((todayFitnessLog.waterIntake || 0) / 2000) * 100) : 50;
+  
+  const dopamineComponent = todayDopamineLog ? (todayDopamineLog.dopamineScore || 100) : 100;
+  
+  const moodComponent = todayMoodLog ? (todayMoodLog.mood * 20) : 60;
+
+  const lifeScore = Math.round(
+    (sleepComponent * 0.20) +
+    (taskComponent * 0.35) +
+    (waterComponent * 0.15) +
+    (dopamineComponent * 0.20) +
+    (moodComponent * 0.10)
+  );
+
+  // 2. Calculate Burnout Probability
+  let burnoutProb = 10;
+  if (sleepLogs.length > 0) {
+    const avgSleepRecent = sleepLogs.slice(0, 3).reduce((acc, l) => acc + l.duration, 0) / Math.min(3, sleepLogs.length);
+    if (avgSleepRecent < 6) burnoutProb += 25;
+    else if (avgSleepRecent < 7) burnoutProb += 10;
+  }
+  if (tasks.length > 0) {
+    const totalPossibleCompletions = tasks.length * 7;
+    let recentCompletions = 0;
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      return d.toISOString().split('T')[0];
+    });
+    tasks.forEach(t => {
+      recentCompletions += (t.completedDates || []).filter(d => last7Days.includes(d)).length;
+    });
+    const recentRate = totalPossibleCompletions > 0 ? (recentCompletions / totalPossibleCompletions) * 100 : 100;
+    if (recentRate < 35) burnoutProb += 20;
+  }
+  if (todayMoodLog && todayMoodLog.mood <= 2) burnoutProb += 20;
+  else if (moodLogs.length > 0 && moodLogs[0].mood <= 2) burnoutProb += 15;
+  if (todaySleepLog && todaySleepLog.restlessness >= 4) burnoutProb += 15;
+  if (todayDopamineLog && todayDopamineLog.totalMinutes > 150) burnoutProb += 15;
+
+  burnoutProb = Math.min(99, Math.max(5, burnoutProb));
+
+  // 3. Dynamic Schedule suggestion (AI Life Operator)
+  let lifeOperatorSuggestion = "Daily routine balanced. Maintain standard workloads and focus blocks tomorrow.";
+  if (burnoutProb > 65) {
+    lifeOperatorSuggestion = `High Burnout Risk detected (${burnoutProb}%). Workload reduced: Suggest lowering tomorrow's focus tasks by 30%, prioritizing mild revision, and locking in a 15-minute relaxation window.`;
+  } else if (todaySleepLog && todaySleepLog.duration < 6) {
+    lifeOperatorSuggestion = `Poor Sleep Logged (${todaySleepLog.duration}h). Workload adjusted: focus blocks shifted later, active physical tasks reduced by 20%, and light study recommended to avoid cognitive overload.`;
+  } else if (todayDopamineLog && todayDopamineLog.dopamineScore < 50) {
+    lifeOperatorSuggestion = `Elevated distraction spikes logged today. Focus blocks rescheduled: Recommend activating Grayscale Focus Mode, setting single-task milestones, and doing a 10-minute digital detox.`;
+  } else if (taskComponent > 80) {
+    lifeOperatorSuggestion = "Peak Execution State! Momentum is high. Suggest scheduling focus blocks for your most complex subjects first thing tomorrow morning.";
+  }
+
   if (apiKey) {
     try {
       const sleepSummary = sleepLogs.slice(0, 5).map(l => 
@@ -284,6 +353,63 @@ ${moodSummary || 'No data'}`;
 
   res.status(200).json({
     localSuggestions,
-    geminiAdvice
+    geminiAdvice,
+    lifeScore,
+    burnoutProb,
+    lifeOperatorSuggestion
   });
+};
+
+export const breakTaskWithAI = async (req, res) => {
+  const { title } = req.body;
+  const userId = req.userId;
+
+  if (!title) {
+    return res.status(400).json({ message: 'Task title is required' });
+  }
+
+  const user = db.findOne('users', u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
+  let microStep = '';
+
+  if (apiKey) {
+    try {
+      const prompt = `You are a psychological productivity and anti-procrastination coach. The user wants to work on this task but is procrastinating: "${title}".
+Suggest exactly ONE ultra-simple, low-activation-energy micro-action that takes less than 3 minutes to start, designed to bypass mental resistance.
+For example, instead of "Study Physics" suggest "Open Chapter 3 and solve only 2 numericals." or instead of "Clean Room" suggest "Pick up exactly 3 items from the floor."
+Keep the suggestion to a single brief sentence of maximum 20 words. Do not use emojis, keep the tone minimalist and direct.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        microStep = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        microStep = microStep.trim();
+      } else {
+        microStep = `Open your notes and read the first paragraph of: ${title}`;
+      }
+    } catch (e) {
+      console.error('Error invoking Gemini for task break:', e);
+      microStep = `Just open: ${title} and work on it for 2 minutes only.`;
+    }
+  } else {
+    microStep = `Just open: ${title} and spend exactly 2 minutes on the first step.`;
+  }
+
+  res.status(200).json({ microStep });
 };

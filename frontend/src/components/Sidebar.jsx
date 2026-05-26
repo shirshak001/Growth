@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Dumbbell, 
   Brain, 
+  BookOpen,
   TrendingUp, 
   Settings, 
   LogOut 
@@ -16,6 +17,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'fitness', label: 'Fitness & Health', icon: Dumbbell },
     { id: 'mindset', label: 'Self-Development', icon: Brain },
+    { id: 'strategist', label: 'Study Strategist', icon: BookOpen },
     { id: 'analytics', label: 'Analytics & Growth', icon: TrendingUp },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

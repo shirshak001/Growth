@@ -141,6 +141,16 @@ a {
   transition: all var(--transition-speed);
 }
 
+select.form-input {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+select option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
@@ -1002,4 +1012,21 @@ a {
   .session-name {
     display: none; /* Hide 'Session: username' text to make space on mobile header */
   }
+}
+
+/* Low-Dopamine Grayscale Mode */
+.low-dopamine-mode {
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.low-dopamine-mode .video-card,
+.low-dopamine-mode .ai-coach-premium,
+.low-dopamine-mode .stat-widget,
+.low-dopamine-mode .habit-grid,
+.low-dopamine-mode .sleep-quality-selector,
+.low-dopamine-mode .water-tracker-container,
+.low-dopamine-mode .ai-suggestions-list,
+.low-dopamine-mode .ai-coach-text {
+  display: none !important; /* Block all dopamine/distraction triggers */
 }

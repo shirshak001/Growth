@@ -116,7 +116,7 @@ export const getTasks = async (req, res) => {
 };
 
 export const addTask = async (req, res) => {
-  const { title, isMandatory, category, dueTime } = req.body;
+  const { title, isMandatory, category, dueTime, plannedHours } = req.body;
   const userId = req.userId;
 
   if (!title) {
@@ -129,7 +129,9 @@ export const addTask = async (req, res) => {
     isMandatory: !!isMandatory,
     category: category || 'custom',
     dueTime: dueTime || null, // HH:MM
+    plannedHours: plannedHours ? Number(plannedHours) : null,
     completedDates: [],
+    actualHoursLogs: {},
     isActive: true,
     createdAt: new Date().toISOString()
   });
@@ -139,7 +141,7 @@ export const addTask = async (req, res) => {
 
 export const toggleTaskCompletion = async (req, res) => {
   const { id } = req.params;
-  const { date } = req.body; // format: "YYYY-MM-DD"
+  const { date, actualHours } = req.body; // format: "YYYY-MM-DD"
   const userId = req.userId;
 
   if (!date) {
@@ -153,17 +155,22 @@ export const toggleTaskCompletion = async (req, res) => {
   }
 
   let completedDates = [...(task.completedDates || [])];
+  let actualHoursLogs = { ...(task.actualHoursLogs || {}) };
   const dateIndex = completedDates.indexOf(date);
 
   if (dateIndex > -1) {
     // Already completed on this date, so un-complete it
     completedDates.splice(dateIndex, 1);
+    delete actualHoursLogs[date];
   } else {
     // Complete it on this date
     completedDates.push(date);
+    if (actualHours !== undefined) {
+      actualHoursLogs[date] = Number(actualHours);
+    }
   }
 
-  db.update('tasks', t => t.id === id, { completedDates });
+  db.update('tasks', t => t.id === id, { completedDates, actualHoursLogs });
   const updatedTask = db.findOne('tasks', t => t.id === id);
 
   res.status(200).json(updatedTask);
@@ -183,4 +190,128 @@ export const deleteTask = async (req, res) => {
   db.update('tasks', t => t.id === id, { isActive: false });
 
   res.status(200).json({ message: 'Task removed successfully' });
+};
+
+// ==========================================
+// DOPAMINE LOGS CONTROLLERS
+// ==========================================
+export const logDopamine = async (req, res) => {
+  const { date, instagramMins, youtubeMins, scrollingMins } = req.body;
+  const userId = req.userId;
+
+  if (!date) {
+    return res.status(400).json({ message: 'Date is required' });
+  }
+
+  const instaVal = Number(instagramMins || 0);
+  const ytVal = Number(youtubeMins || 0);
+  const scrollVal = Number(scrollingMins || 0);
+  const totalMins = instaVal + ytVal + scrollVal;
+
+  // Calculate Dopamine Score out of 100
+  let score = 100 - (totalMins / 3);
+  score = Math.max(10, Math.round(score));
+
+  const existingLog = db.findOne('dopamineLogs', log => log.userId === userId && log.date === date);
+
+  let result;
+  if (existingLog) {
+    db.update('dopamineLogs', log => log.id === existingLog.id, {
+      instagramMins: instaVal,
+      youtubeMins: ytVal,
+      scrollingMins: scrollVal,
+      totalMinutes: totalMins,
+      dopamineScore: score
+    });
+    result = db.findOne('dopamineLogs', log => log.id === existingLog.id);
+  } else {
+    result = db.insert('dopamineLogs', {
+      userId,
+      date,
+      instagramMins: instaVal,
+      youtubeMins: ytVal,
+      scrollingMins: scrollVal,
+      totalMinutes: totalMins,
+      dopamineScore: score
+    });
+  }
+
+  res.status(200).json(result);
+};
+
+export const getDopamineLogs = async (req, res) => {
+  const userId = req.userId;
+  const logs = db.find('dopamineLogs', log => log.userId === userId);
+  logs.sort((a, b) => b.date.localeCompare(a.date));
+  res.status(200).json(logs);
+};
+
+// ==========================================
+// STUDY STRATEGIST CONTROLLERS
+// ==========================================
+export const saveStudyPlan = async (req, res) => {
+  const { targetExam, examDate, weakSubjects, availableHours, aiRoadmap } = req.body;
+  const userId = req.userId;
+
+  const existingPlan = db.findOne('studyPlans', plan => plan.userId === userId);
+
+  let result;
+  if (existingPlan) {
+    db.update('studyPlans', plan => plan.id === existingPlan.id, {
+      targetExam,
+      examDate,
+      weakSubjects,
+      availableHours: Number(availableHours || 4),
+      aiRoadmap: aiRoadmap || existingPlan.aiRoadmap
+    });
+    result = db.findOne('studyPlans', plan => plan.id === existingPlan.id);
+  } else {
+    result = db.insert('studyPlans', {
+      userId,
+      targetExam,
+      examDate,
+      weakSubjects,
+      availableHours: Number(availableHours || 4),
+      aiRoadmap: aiRoadmap || ''
+    });
+  }
+
+  res.status(200).json(result);
+};
+
+export const getStudyPlan = async (req, res) => {
+  const userId = req.userId;
+  const plan = db.findOne('studyPlans', p => p.userId === userId);
+  res.status(200).json(plan || {});
+};
+
+// ==========================================
+// MOCK TEST CONTROLLERS
+// ==========================================
+export const logMockTest = async (req, res) => {
+  const { date, testName, score, totalMarks, analysis } = req.body;
+  const userId = req.userId;
+
+  if (!date || !testName || score === undefined || !totalMarks) {
+    return res.status(400).json({ message: 'Missing required mock test parameters' });
+  }
+
+  const log = db.insert('mockTests', {
+    userId,
+    date,
+    testName,
+    score: Number(score),
+    totalMarks: Number(totalMarks),
+    percentage: Math.round((Number(score) / Number(totalMarks)) * 100),
+    analysis: analysis || ''
+  });
+
+  res.status(201).json(log);
+};
+
+export const getMockTests = async (req, res) => {
+  const userId = req.userId;
+  const logs = db.find('mockTests', log => log.userId === userId);
+  logs.sort((a, b) => b.date.localeCompare(a.date));
+  res.status(200).json(logs);
 };

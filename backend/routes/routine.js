@@ -5,7 +5,13 @@ import {
   getTasks,
   addTask,
   toggleTaskCompletion,
-  deleteTask
+  deleteTask,
+  logDopamine,
+  getDopamineLogs,
+  saveStudyPlan,
+  getStudyPlan,
+  logMockTest,
+  getMockTests
 } from '../controllers/routineController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -23,5 +29,17 @@ router.route('/tasks')
 
 router.put('/tasks/:id/toggle', toggleTaskCompletion);
 router.delete('/tasks/:id', deleteTask);
+
+router.route('/dopamine')
+  .get(getDopamineLogs)
+  .post(logDopamine);
+
+router.route('/strategist')
+  .get(getStudyPlan)
+  .post(saveStudyPlan);
+
+router.route('/mock-tests')
+  .get(getMockTests)
+  .post(logMockTest);
 
 export default router;
