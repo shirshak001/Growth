@@ -227,7 +227,7 @@ const Analytics = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+    <div className="page-container">
       
       {/* Overview stats header */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
@@ -245,9 +245,9 @@ const Analytics = () => {
           <span style={{ color: 'var(--text-secondary)' }}>Compiling analytics dataset...</span>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="inner-column">
           {/* Row 1: Habits & Sleep Charts */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', flex: '1.1', minHeight: 0 }}>
+          <div className="grid-2" style={{ gap: '20px', flex: '1.1', minHeight: 0 }}>
             
             {/* Task completion rate card */}
             <div className="card" style={{ height: '100%' }}>
@@ -280,7 +280,7 @@ const Analytics = () => {
           </div>
 
           {/* Row 2: Weight Chart & AI Coach */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', flex: '1', minHeight: 0 }}>
+          <div className="grid-2" style={{ gap: '20px', flex: '1', minHeight: 0 }}>
             
             {/* Weight trend card */}
             <div className="card" style={{ height: '100%' }}>

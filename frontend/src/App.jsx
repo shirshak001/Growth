@@ -7,9 +7,10 @@ import Fitness from './pages/Fitness';
 import SelfDevelopment from './pages/SelfDevelopment';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import { LogOut } from 'lucide-react';
 
 const NavigationContainer = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   if (loading) {
@@ -73,10 +74,13 @@ const NavigationContainer = () => {
           <div className="header-title">
             <h2>{getHeaderTitle()}</h2>
           </div>
-          <div className="header-actions">
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Current Session: <strong>{user.name}</strong>
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span className="session-name" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              Session: <strong>{user.name}</strong>
             </span>
+            <button onClick={logout} className="btn-icon" title="Sign Out" style={{ padding: '6px' }}>
+              <LogOut size={14} style={{ color: 'var(--color-danger)' }} />
+            </button>
           </div>
         </header>
         

@@ -183,7 +183,7 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+    <div className="page-container">
       
       {/* Date Selector Header */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
@@ -240,10 +240,10 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="grid-dash" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div className="grid-dash">
         
         {/* Left Side: Tasks */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+        <div className="inner-column">
           
           {/* Daily Progress Widget */}
           <div className="card stat-widget" style={{ flexShrink: 0, padding: '16px' }}>
@@ -363,7 +363,7 @@ const Dashboard = () => {
         </div>
 
         {/* Right Side: Sleep Logging */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="inner-column" style={{ gap: '24px' }}>
           
           <div className="card">
             <div className="card-title">

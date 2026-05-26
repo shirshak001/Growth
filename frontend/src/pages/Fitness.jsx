@@ -213,7 +213,7 @@ const Fitness = () => {
   const cyclePrediction = getPrediction();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+    <div className="page-container">
       
       {/* Header and selector */}
       <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
@@ -276,10 +276,10 @@ const Fitness = () => {
 
       </div>
 
-      <div className="grid-dash" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <div className="grid-dash">
         
         {/* Left Column: Logger & History */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0, overflow: 'hidden' }}>
+        <div className="inner-column">
           
           {/* Weight & Active Minutes Logger */}
           <div className="card" style={{ flexShrink: 0 }}>
@@ -359,7 +359,7 @@ const Fitness = () => {
         </div>
 
         {/* Right Column: Hydration & Period Tracker */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minHeight: 0, overflow: 'hidden' }}>
+        <div className="inner-column">
           
           {/* Hydration Tracker */}
           <div className="card" style={{ flexShrink: 0, padding: '16px' }}>
