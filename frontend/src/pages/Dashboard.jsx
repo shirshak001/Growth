@@ -154,38 +154,38 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       
       {/* Date Selector Header */}
-      <div className="card flex justify-between align-center" style={{ padding: '16px 24px' }}>
+      <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
         <div className="flex align-center gap-8">
-          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Selected Date:</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Selected Date:</span>
           <input 
             type="date" 
             value={selectedDate} 
             onChange={(e) => setSelectedDate(e.target.value)} 
             className="form-input" 
-            style={{ width: 'auto', padding: '6px 12px' }}
+            style={{ width: 'auto', padding: '4px 10px', fontSize: '13px' }}
           />
         </div>
         <div className="flex align-center gap-8">
-          <Award size={18} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ fontSize: '14px', fontWeight: 600 }}>
+          <Award size={16} style={{ color: 'var(--color-primary)' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600 }}>
             {completionPercentage}% Tasks Completed Today
           </span>
         </div>
       </div>
 
-      <div className="grid-dash">
+      <div className="grid-dash" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         
         {/* Left Side: Tasks */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
           
           {/* Daily Progress Widget */}
-          <div className="card stat-widget">
-            <span className="card-title">Daily Execution</span>
+          <div className="card stat-widget" style={{ flexShrink: 0, padding: '16px' }}>
+            <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px' }}>Daily Execution</span>
             <div className="flex align-center gap-16">
-              <div className="stat-value">{completedTasksToday.length}/{activeTasks.length}</div>
+              <div className="stat-value" style={{ fontSize: '26px' }}>{completedTasksToday.length}/{activeTasks.length}</div>
               <div className="water-progress-bar" style={{ margin: 0 }}>
                 <div 
                   className="water-progress-fill" 
@@ -196,22 +196,19 @@ const Dashboard = () => {
                 />
               </div>
             </div>
-            <span className="stat-subtitle" style={{ marginTop: '8px' }}>
-              Complete mandatory and custom habits to lock in your daily growth.
-            </span>
           </div>
 
           {/* Task Manager Card */}
-          <div className="card">
-            <span className="card-title">Tasks & Habits</span>
+          <div className="card" style={{ flex: 1, minHeight: 0 }}>
+            <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px' }}>Tasks & Habits</span>
             
-            <div className="task-section">
+            <div className="task-section" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
               {activeTasks.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
                   No tasks tracked yet. Add your first routine below.
                 </p>
               ) : (
-                <div className="task-list">
+                <div className="task-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
                   {activeTasks.map(task => {
                     const isCompleted = task.completedDates?.includes(selectedDate);
                     return (

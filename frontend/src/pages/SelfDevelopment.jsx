@@ -22,6 +22,44 @@ const SelfDevelopment = () => {
   const [mindsetScore, setMindsetScore] = useState(3);
   const [reflection, setReflection] = useState('');
   
+  // Pomodoro states
+  const [timerMinutes, setTimerMinutes] = useState(25);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
+
+  useEffect(() => {
+    let interval = null;
+    if (timerActive) {
+      interval = setInterval(() => {
+        if (timerSeconds === 0) {
+          if (timerMinutes === 0) {
+            setTimerActive(false);
+            const nextMode = !isBreak;
+            setIsBreak(nextMode);
+            setTimerMinutes(nextMode ? 5 : 25);
+            setTimerSeconds(0);
+          } else {
+            setTimerMinutes(prev => prev - 1);
+            setTimerSeconds(59);
+          }
+        } else {
+          setTimerSeconds(prev => prev - 1);
+        }
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timerMinutes, timerSeconds, isBreak]);
+
+  const selectTimerMode = (focusMode) => {
+    setTimerActive(false);
+    setIsBreak(!focusMode);
+    setTimerMinutes(focusMode ? 25 : 5);
+    setTimerSeconds(0);
+  };
+  
   const [loading, setLoading] = useState(true);
 
   // Load mood & tasks data
@@ -206,9 +244,9 @@ const SelfDevelopment = () => {
           </div>
 
           {/* Reflections History List */}
-          <div className="card">
+          <div className="card" style={{ flex: 1, minHeight: 0 }}>
             <span className="card-title">Reflection History</span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
               {moodLogs.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '10px 0' }}>
                   No journal entries recorded.
@@ -232,7 +270,7 @@ const SelfDevelopment = () => {
         </div>
 
         {/* Right Side: Streaks Widget */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
           
           <div className="card stat-widget" style={{ minHeight: '200px' }}>
             <span className="card-title">
@@ -263,18 +301,54 @@ const SelfDevelopment = () => {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card" style={{ flex: 1, minHeight: 0 }}>
             <span className="card-title">
-              <span>Habit Streaks Info</span>
-              <BookOpen size={16} />
+              <span>Pomodoro Focus Timer</span>
+              <Brain size={16} style={{ color: 'var(--color-primary)' }} />
             </span>
-            <div style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-              <p style={{ marginBottom: '10px' }}>
-                Your routine streak measures consistency. Daily repetition is the building block of growth.
-              </p>
-              <p>
-                <strong>Tip:</strong> Ensure you have defined at least 1 <em>Mandatory Routine</em> in the dashboard to initiate streak calculations.
-              </p>
+            <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
+                {isBreak ? 'Short Break' : 'Focus State'}
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 700, fontFamily: 'monospace', margin: '4px 0', color: isBreak ? 'var(--color-success)' : 'var(--color-primary)' }}>
+                {String(timerMinutes).padStart(2, '0')}:{String(timerSeconds).padStart(2, '0')}
+              </div>
+              <div className="flex gap-8 justify-center" style={{ margin: '8px 0' }}>
+                <button 
+                  type="button" 
+                  onClick={() => selectTimerMode(true)} 
+                  className={`quality-btn ${!isBreak ? 'active' : ''}`}
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                >
+                  Focus
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => selectTimerMode(false)} 
+                  className={`quality-btn ${isBreak ? 'active' : ''}`}
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                >
+                  Break
+                </button>
+              </div>
+              <div className="flex gap-8 justify-center" style={{ marginTop: '10px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setTimerActive(!timerActive)} 
+                  className="btn btn-primary"
+                  style={{ padding: '6px 12px', fontSize: '12px', flex: 1 }}
+                >
+                  {timerActive ? 'Pause' : 'Start'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setTimerActive(false); setTimerMinutes(25); setTimerSeconds(0); setIsBreak(false); }} 
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
 

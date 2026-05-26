@@ -13,6 +13,7 @@ import routineRoutes from './routes/routine.js';
 import fitnessRoutes from './routes/fitness.js';
 import moodRoutes from './routes/mood.js';
 import aiRoutes from './routes/ai.js';
+import periodRoutes from './routes/period.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,7 @@ app.use('/api/routine', routineRoutes);
 app.use('/api/fitness', fitnessRoutes);
 app.use('/api/mood', moodRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/period', periodRoutes);
 
 // Base route
 app.get('/', (req, res) => {

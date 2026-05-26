@@ -226,121 +226,124 @@ const Analytics = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       
       {/* Overview stats header */}
-      <div className="card flex justify-between align-center" style={{ padding: '16px 24px' }}>
+      <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
         <div className="flex align-center gap-8">
-          <TrendingUp size={18} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ fontSize: '16px', fontWeight: 600 }}>Performance & Growth Metrics</span>
+          <TrendingUp size={16} style={{ color: 'var(--color-primary)' }} />
+          <span style={{ fontSize: '14px', fontWeight: 600 }}>Performance & Growth Metrics</span>
         </div>
-        <button onClick={() => { loadAnalyticsData(); loadAISuggestions(); }} className="btn btn-secondary" style={{ padding: '8px 12px' }}>
-          <RefreshCw size={14} /> Reload Analytics
+        <button onClick={() => { loadAnalyticsData(); loadAISuggestions(); }} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }}>
+          <RefreshCw size={12} /> Reload Analytics
         </button>
       </div>
 
       {loading ? (
-        <div className="card text-center" style={{ padding: '60px 0' }}>
+        <div className="card text-center" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: 'var(--text-secondary)' }}>Compiling analytics dataset...</span>
         </div>
       ) : (
-        <>
-          {/* Charts section */}
-          <div className="grid-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {/* Row 1: Habits & Sleep Charts */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', flex: '1.1', minHeight: 0 }}>
             
             {/* Task completion rate card */}
-            <div className="card">
-              <span className="card-title">Daily Task Compliance (Last 7 Days)</span>
-              <div style={{ height: '240px', position: 'relative' }}>
+            <div className="card" style={{ height: '100%' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Daily Task Compliance (Last 7 Days)</span>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {tasks.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                     No tasks defined. Tracking compliance requires task logs.
                   </div>
                 ) : (
-                  <Bar data={taskChartData} options={taskChartOptions} />
+                  <Bar data={taskChartData} options={{ ...taskChartOptions, maintainAspectRatio: false }} />
                 )}
               </div>
             </div>
 
             {/* Sleep trend card */}
-            <div className="card">
-              <span className="card-title">Sleep Cycles & Quality (Last 7 Logged Sessions)</span>
-              <div style={{ height: '240px', position: 'relative' }}>
+            <div className="card" style={{ height: '100%' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Sleep Cycles & Quality</span>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {sleepLogs.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                     No sleep history available. Log sleep on the dashboard to visualize.
                   </div>
                 ) : (
-                  <Line data={sleepChartData} options={sleepChartOptions} />
+                  <Line data={sleepChartData} options={{ ...sleepChartOptions, maintainAspectRatio: false }} />
                 )}
               </div>
             </div>
 
+          </div>
+
+          {/* Row 2: Weight Chart & AI Coach */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', flex: '1', minHeight: 0 }}>
+            
             {/* Weight trend card */}
-            <div className="card" style={{ gridColumn: 'span 2' }}>
-              <span className="card-title">Weight Trajectory Chart</span>
-              <div style={{ height: '260px', position: 'relative' }}>
+            <div className="card" style={{ height: '100%' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Weight Trajectory Chart</span>
+              <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
                 {weightLogs.length === 0 ? (
-                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                     No weights logged. Add weight inputs on the Fitness page.
                   </div>
                 ) : (
-                  <Line data={weightChartData} options={weightChartOptions} />
+                  <Line data={weightChartData} options={{ ...weightChartOptions, maintainAspectRatio: false }} />
                 )}
               </div>
             </div>
 
-          </div>
-
-          {/* AI Coach suggestions section */}
-          <div className="card">
-            <span className="card-title">
-              <span className="flex align-center gap-8">
-                <Sparkles size={16} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights
+            {/* AI Coach card */}
+            <div className="card" style={{ height: '100%' }}>
+              <span className="card-title" style={{ fontSize: '13px', marginBottom: '12px', flexShrink: 0 }}>
+                <span className="flex align-center gap-8">
+                  <Sparkles size={14} style={{ color: 'var(--color-primary)' }} /> AI Coach Insights
+                </span>
+                {aiLoading && <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Processing...</span>}
               </span>
-              {aiLoading && <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Processing...</span>}
-            </span>
 
-            <div className="grid-dash">
-              
-              {/* Local engine cards */}
-              <div className="ai-suggestions-list">
-                <span className="form-label" style={{ fontSize: '11px', marginBottom: '8px' }}>Actionable Diagnostics</span>
-                {aiSuggestions.map((s, idx) => (
-                  <div key={idx} className={`ai-suggestion-card priority-${s.priority}`}>
-                    <div className="ai-suggestion-header">
-                      <span>{s.title}</span>
-                      <span style={{ 
-                        fontSize: '10px', 
-                        textTransform: 'uppercase', 
-                        color: s.priority === 'high' ? 'var(--color-danger)' : s.priority === 'medium' ? 'var(--color-warning)' : 'var(--color-primary)' 
-                      }}>
-                        {s.priority} priority
-                      </span>
+              <div className="flex gap-16" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                
+                {/* Local engine list */}
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
+                  <span className="form-label" style={{ fontSize: '10px', marginBottom: '4px', flexShrink: 0 }}>Actionable Diagnostics</span>
+                  {aiSuggestions.map((s, idx) => (
+                    <div key={idx} className={`ai-suggestion-card priority-${s.priority}`} style={{ padding: '10px', borderRadius: '6px' }}>
+                      <div className="ai-suggestion-header" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                        <span>{s.title}</span>
+                        <span style={{ 
+                          fontSize: '8px', 
+                          textTransform: 'uppercase', 
+                          color: s.priority === 'high' ? 'var(--color-danger)' : s.priority === 'medium' ? 'var(--color-warning)' : 'var(--color-primary)' 
+                        }}>
+                          {s.priority}
+                        </span>
+                      </div>
+                      <div className="ai-suggestion-desc" style={{ fontSize: '11px', lineHeight: 1.4 }}>{s.description}</div>
                     </div>
-                    <div className="ai-suggestion-desc">{s.description}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Gemini Premium summary */}
-              <div className="ai-coach-premium" style={{ margin: 0 }}>
-                <span className="form-label" style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Gemini AI Premium Analysis</span>
-                {geminiAdvice ? (
-                  <p className="ai-coach-text">{geminiAdvice}</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                    <div className="flex gap-8 align-center" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                      <Info size={14} style={{ flexShrink: 0 }} />
-                      <p>Add a Gemini API Key in the Settings page to unlock advanced generative life coaching summaries based on your metrics.</p>
+                {/* Gemini advice */}
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <span className="form-label" style={{ fontSize: '10px', marginBottom: '4px', flexShrink: 0 }}>Gemini AI Analysis</span>
+                  {geminiAdvice ? (
+                    <p className="ai-coach-text" style={{ fontSize: '11px', margin: 0, lineHeight: 1.5 }}>{geminiAdvice}</p>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '6px', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                      <Info size={12} style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <p>Provide a Google Gemini API Key in the Settings page to unlock deep LLM summaries of your routines.</p>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
+              </div>
             </div>
+
           </div>
-        </>
+        </div>
       )}
 
     </div>

@@ -9,6 +9,7 @@ const Settings = () => {
   const [name, setName] = useState(user?.name || '');
   const [height, setHeight] = useState(user?.height || 170);
   const [targetWeight, setTargetWeight] = useState(user?.targetWeight || 70);
+  const [gender, setGender] = useState(user?.gender || 'male');
   const [geminiApiKey, setGeminiApiKey] = useState(user?.geminiApiKey || '');
 
   const [message, setMessage] = useState('');
@@ -26,6 +27,7 @@ const Settings = () => {
         name,
         height: Number(height),
         targetWeight: Number(targetWeight),
+        gender,
         geminiApiKey
       });
       setMessage('Profile updated successfully.');
@@ -89,6 +91,20 @@ const Settings = () => {
               onChange={(e) => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Gender</label>
+            <select
+              className="form-input"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+            >
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
           </div>
 
           <div className="grid-2">
