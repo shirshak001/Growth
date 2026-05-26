@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CheckSquare, Moon, Sun, Plus, Trash2, Award } from 'lucide-react';
+import { CheckSquare, Moon, Sun, Plus, Trash2, Award, Clock, Target, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
-  const { authFetch } = useAuth();
+  const { authFetch, user } = useAuth();
   
+  const getDaysRemaining = (targetDateStr) => {
+    if (!targetDateStr) return null;
+    const target = new Date(targetDateStr);
+    const today = new Date();
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
   // Date state
   const getTodayString = () => {
     const d = new Date();
@@ -22,11 +33,15 @@ const Dashboard = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState('custom');
   const [newTaskIsMandatory, setNewTaskIsMandatory] = useState(false);
+  const [newTaskDueTime, setNewTaskDueTime] = useState('');
 
   // Sleep logger inputs
   const [sleepTime, setSleepTime] = useState('22:00');
   const [wakeTime, setWakeTime] = useState('06:00');
   const [sleepQuality, setSleepQuality] = useState(3);
+  const [sleepLatency, setSleepLatency] = useState(15);
+  const [restlessness, setRestlessness] = useState(1);
+  const [wakeEnergy, setWakeEnergy] = useState(3);
   
   const [loading, setLoading] = useState(true);
 
@@ -53,8 +68,17 @@ const Dashboard = () => {
           setSleepTime(todayLog.sleepTime);
           setWakeTime(todayLog.wakeTime);
           setSleepQuality(todayLog.quality);
+          setSleepLatency(todayLog.sleepLatency || 15);
+          setRestlessness(todayLog.restlessness || 1);
+          setWakeEnergy(todayLog.wakeEnergy || 3);
         } else {
           setSleepLog(null);
+          setSleepTime('22:00');
+          setWakeTime('06:00');
+          setSleepQuality(3);
+          setSleepLatency(15);
+          setRestlessness(1);
+          setWakeEnergy(3);
         }
       }
     } catch (error) {
@@ -95,7 +119,8 @@ const Dashboard = () => {
         body: JSON.stringify({
           title: newTaskTitle,
           isMandatory: newTaskIsMandatory,
-          category: newTaskCategory
+          category: newTaskCategory,
+          dueTime: newTaskDueTime || undefined
         })
       });
       if (res.ok) {
@@ -104,6 +129,7 @@ const Dashboard = () => {
         setNewTaskTitle('');
         setNewTaskIsMandatory(false);
         setNewTaskCategory('custom');
+        setNewTaskDueTime('');
       }
     } catch (error) {
       console.error('Error adding task:', error);
@@ -134,7 +160,10 @@ const Dashboard = () => {
           date: selectedDate,
           sleepTime,
           wakeTime,
-          quality: Number(sleepQuality)
+          quality: Number(sleepQuality),
+          sleepLatency: Number(sleepLatency),
+          restlessness: Number(restlessness),
+          wakeEnergy: Number(wakeEnergy)
         })
       });
       if (res.ok) {
@@ -175,6 +204,41 @@ const Dashboard = () => {
           </span>
         </div>
       </div>
+
+      {/* Ultimate Goal Header Widget */}
+      {user?.ultimateGoal?.title && (
+        <div className="card" style={{ flexShrink: 0, padding: '16px 24px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(18, 20, 29, 0.6) 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+          <div className="flex justify-between align-center">
+            <div>
+              <span className="flex align-center gap-8" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <Target size={12} /> Ultimate Goal
+              </span>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, marginTop: '4px', marginBottom: '2px' }}>{user.ultimateGoal.title}</h3>
+              {user.ultimateGoal.description && (
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{user.ultimateGoal.description}</p>
+              )}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              {(() => {
+                const days = getDaysRemaining(user.ultimateGoal.targetDate);
+                if (days === null) return null;
+                if (days < 0) {
+                  return <span className="task-badge task-badge-custom" style={{ padding: '4px 8px', fontSize: '11px' }}>Goal Date Reached</span>;
+                }
+                if (days === 0) {
+                  return <span className="task-badge" style={{ background: 'var(--color-warning-glow)', color: 'var(--color-warning)', padding: '4px 8px', fontSize: '11px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>Today is the Target Date!</span>;
+                }
+                return (
+                  <div>
+                    <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)' }}>{days}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '4px' }}>days remaining</span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid-dash" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         
@@ -223,6 +287,11 @@ const Dashboard = () => {
                             />
                           </label>
                           <span className="task-text">{task.title}</span>
+                          {task.dueTime && (
+                            <span className="flex align-center gap-4" style={{ fontSize: '11px', color: 'var(--color-warning)', background: 'var(--color-warning-glow)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                              <Clock size={10} /> {task.dueTime}
+                            </span>
+                          )}
                           <span className={`task-badge ${task.isMandatory ? 'task-badge-mandatory' : 'task-badge-custom'}`}>
                             {task.isMandatory ? 'Mandatory' : 'Custom'}
                           </span>
@@ -262,6 +331,16 @@ const Dashboard = () => {
                       <option value="study">Study</option>
                       <option value="practice">Practice</option>
                     </select>
+                  </div>
+                  <div className="flex align-center gap-8" style={{ fontSize: '13px' }}>
+                    <label className="form-label" style={{ margin: 0, textTransform: 'none' }}>Due Time:</label>
+                    <input
+                      type="time"
+                      className="form-input"
+                      style={{ padding: '6px 12px', width: 'auto' }}
+                      value={newTaskDueTime}
+                      onChange={(e) => setNewTaskDueTime(e.target.value)}
+                    />
                   </div>
                   <label className="flex align-center gap-8" style={{ fontSize: '13px', cursor: 'pointer' }}>
                     <input
@@ -317,6 +396,51 @@ const Dashboard = () => {
                 </div>
               </div>
 
+              <div className="sleep-inputs">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Latency (mins)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-input"
+                    value={sleepLatency}
+                    onChange={(e) => setSleepLatency(Number(e.target.value))}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Restlessness</label>
+                  <select
+                    className="form-input"
+                    value={restlessness}
+                    onChange={(e) => setRestlessness(Number(e.target.value))}
+                    required
+                  >
+                    <option value={1}>1 - Calm / Peaceful</option>
+                    <option value={2}>2 - Light tossing</option>
+                    <option value={3}>3 - Tossed & turned</option>
+                    <option value={4}>4 - Frequent waking</option>
+                    <option value={5}>5 - Very restless</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Wake-Up Energy (1 - 5)</label>
+                <div className="sleep-quality-selector">
+                  {[1, 2, 3, 4, 5].map(q => (
+                    <button
+                      key={q}
+                      type="button"
+                      className={`quality-btn ${wakeEnergy === q ? 'active' : ''}`}
+                      onClick={() => setWakeEnergy(q)}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Sleep Quality (1 - 5)</label>
                 <div className="sleep-quality-selector">
@@ -345,10 +469,23 @@ const Dashboard = () => {
                   <span style={{ color: 'var(--text-secondary)' }}>Calculated Duration:</span>
                   <span style={{ fontWeight: 600 }}>{sleepLog.duration} Hours</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between" style={{ marginBottom: '8px' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Quality Rating:</span>
                   <span style={{ fontWeight: 600 }}>{sleepLog.quality} / 5</span>
                 </div>
+                {sleepLog.sleepScore !== undefined && (
+                  <div className="flex justify-between align-center">
+                    <span style={{ color: 'var(--text-secondary)' }}>Sleep Score:</span>
+                    <span className="task-badge" style={{
+                      background: sleepLog.sleepScore >= 80 ? 'var(--color-success-glow)' : sleepLog.sleepScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
+                      color: sleepLog.sleepScore >= 80 ? 'var(--color-success)' : sleepLog.sleepScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
+                      fontWeight: 700,
+                      border: sleepLog.sleepScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : sleepLog.sleepScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+                    }}>
+                      {sleepLog.sleepScore} / 100
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

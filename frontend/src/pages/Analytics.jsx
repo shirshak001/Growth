@@ -108,11 +108,10 @@ const Analytics = () => {
         yAxisID: 'y',
       },
       {
-        label: 'Quality (1-5)',
-        data: recentSleepLogs.map(log => log.quality),
+        label: 'Sleep Score (0-100)',
+        data: recentSleepLogs.map(log => log.sleepScore !== undefined ? log.sleepScore : log.quality * 20),
         borderColor: '#10b981',
-        backgroundColor: 'transparent',
-        borderDash: [5, 5],
+        backgroundColor: 'rgba(16, 185, 129, 0.05)',
         tension: 0.3,
         yAxisID: 'y1',
       }
@@ -125,14 +124,16 @@ const Analytics = () => {
       y: {
         type: 'linear',
         position: 'left',
-        title: { display: true, text: 'Hours', color: '#9ca3af' },
+        title: { display: true, text: 'Hours Slept', color: '#9ca3af' },
         ticks: { color: '#6b7280' },
         grid: { color: 'rgba(255, 255, 255, 0.05)' }
       },
       y1: {
         type: 'linear',
         position: 'right',
-        title: { display: true, text: 'Quality Scale', color: '#9ca3af' },
+        min: 0,
+        max: 100,
+        title: { display: true, text: 'Sleep Score', color: '#9ca3af' },
         ticks: { color: '#6b7280' },
         grid: { drawOnChartArea: false }
       },

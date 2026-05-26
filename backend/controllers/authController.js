@@ -37,6 +37,7 @@ export const registerUser = async (req, res) => {
     height: 170, // Default 170cm
     targetWeight: 70, // Default 70kg
     gender: gender || 'other', // male, female, other
+    ultimateGoal: { title: '', targetDate: '', description: '' },
     createdAt: new Date().toISOString()
   });
 
@@ -48,6 +49,7 @@ export const registerUser = async (req, res) => {
       height: user.height,
       targetWeight: user.targetWeight,
       gender: user.gender,
+      ultimateGoal: user.ultimateGoal,
       token: generateToken(user.id)
     });
   } else {
@@ -72,6 +74,7 @@ export const loginUser = async (req, res) => {
       height: user.height,
       targetWeight: user.targetWeight,
       gender: user.gender || 'other',
+      ultimateGoal: user.ultimateGoal || { title: '', targetDate: '', description: '' },
       geminiApiKey: user.geminiApiKey || '',
       token: generateToken(user.id)
     });
@@ -94,6 +97,7 @@ export const getUserProfile = async (req, res) => {
       height: user.height,
       targetWeight: user.targetWeight,
       gender: user.gender || 'other',
+      ultimateGoal: user.ultimateGoal || { title: '', targetDate: '', description: '' },
       geminiApiKey: user.geminiApiKey || '',
       createdAt: user.createdAt
     });
@@ -109,13 +113,14 @@ export const updateUserProfile = async (req, res) => {
   const user = db.findOne('users', u => u.id === req.userId);
 
   if (user) {
-    const { name, height, targetWeight, gender, geminiApiKey } = req.body;
+    const { name, height, targetWeight, gender, ultimateGoal, geminiApiKey } = req.body;
 
     const updatedData = {};
     if (name) updatedData.name = name;
     if (height !== undefined) updatedData.height = Number(height);
     if (targetWeight !== undefined) updatedData.targetWeight = Number(targetWeight);
     if (gender) updatedData.gender = gender;
+    if (ultimateGoal !== undefined) updatedData.ultimateGoal = ultimateGoal;
     if (geminiApiKey !== undefined) updatedData.geminiApiKey = geminiApiKey;
 
     db.update('users', u => u.id === req.userId, updatedData);
@@ -129,6 +134,7 @@ export const updateUserProfile = async (req, res) => {
       height: updatedUser.height,
       targetWeight: updatedUser.targetWeight,
       gender: updatedUser.gender || 'other',
+      ultimateGoal: updatedUser.ultimateGoal || { title: '', targetDate: '', description: '' },
       geminiApiKey: updatedUser.geminiApiKey || '',
       message: 'Profile updated successfully'
     });

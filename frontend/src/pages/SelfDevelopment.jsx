@@ -175,10 +175,10 @@ const SelfDevelopment = () => {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       
       {/* Date Header */}
-      <div className="card flex justify-between align-center" style={{ padding: '16px 24px' }}>
+      <div className="card flex justify-between align-center" style={{ padding: '16px 24px', flexShrink: 0 }}>
         <div className="flex align-center gap-8">
           <Calendar size={16} style={{ color: 'var(--color-primary)' }} />
           <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Log Mindset Date:</span>
@@ -195,10 +195,10 @@ const SelfDevelopment = () => {
         </div>
       </div>
 
-      <div className="grid-dash">
+      <div className="grid-dash" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         
         {/* Left Side: Daily Mindset Rating & Journaling */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
           
           <div className="card">
             <span className="card-title">Daily Mindset & Focus</span>
@@ -267,10 +267,41 @@ const SelfDevelopment = () => {
             </div>
           </div>
 
+          {/* Motivation Corner */}
+          <div className="card" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <span className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+              <BookOpen size={14} style={{ color: 'var(--color-warning)' }} /> Motivation Corner
+            </span>
+            <div className="motivation-grid">
+              <div className="video-card">
+                <span className="video-title">Daily Discipline & Focus Speech</span>
+                <div className="video-container">
+                  <iframe 
+                    src="https://www.youtube.com/embed/wzXqE1qJ6y4" 
+                    title="Discipline & Focus"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+              <div className="video-card">
+                <span className="video-title">Ambient Lofi Coding/Study Beats</span>
+                <div className="video-container">
+                  <iframe 
+                    src="https://www.youtube.com/embed/jfKfPfyJRdk" 
+                    title="Focus Lofi Beats"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Right Side: Streaks Widget */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: 0, overflow: 'hidden' }}>
           
           <div className="card stat-widget" style={{ minHeight: '200px' }}>
             <span className="card-title">

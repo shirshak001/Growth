@@ -213,28 +213,51 @@ export const getAISuggestions = async (req, res) => {
   // Get local base recommendations
   const localSuggestions = generateLocalSuggestions(payload);
 
-  // If user has a Gemini API Key, try to call Gemini API to get a premium customized advice text
+  // Fallback to process.env.GEMINI_API_KEY if user has not specified one
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
   let geminiAdvice = '';
-  if (user.geminiApiKey) {
+  
+  if (apiKey) {
     try {
-      const sleepSummary = sleepLogs.slice(0, 5).map(l => `${l.date}: Sleep ${l.duration}h, Quality: ${l.quality}/5`).join('\n');
-      const taskSummary = tasks.map(t => `${t.title} (${t.category}): Done ${t.completedDates?.length || 0} times`).join('\n');
-      const fitnessSummary = fitnessLogs.slice(0, 5).map(l => `${l.date}: Weight ${l.weight || 'N/A'}kg, Water ${l.waterIntake || 0}ml`).join('\n');
-      const moodSummary = moodLogs.slice(0, 5).map(l => `${l.date}: Mood ${l.mood}/5, Notes: ${l.reflection || 'None'}`).join('\n');
+      const sleepSummary = sleepLogs.slice(0, 5).map(l => 
+        `${l.date}: Slept ${l.duration}h, Quality: ${l.quality}/5, Latency: ${l.sleepLatency || 15}m, Energy: ${l.wakeEnergy || 3}/5, Score: ${l.sleepScore || 'N/A'}/100`
+      ).join('\n');
+      
+      const taskSummary = tasks.map(t => 
+        `${t.title} (${t.category}${t.dueTime ? `, Due: ${t.dueTime}` : ''}): Done ${t.completedDates?.length || 0} times`
+      ).join('\n');
+      
+      const fitnessSummary = fitnessLogs.slice(0, 5).map(l => 
+        `${l.date}: Weight ${l.weight || 'N/A'}kg, Water ${l.waterIntake || 0}ml`
+      ).join('\n');
+      
+      const moodSummary = moodLogs.slice(0, 5).map(l => 
+        `${l.date}: Mood ${l.mood}/5, Notes: ${l.reflection || 'None'}`
+      ).join('\n');
 
-      const prompt = `You are a premium, highly scientific AI Life Coach. Analyse this user's data and provide a concise, direct, professional summary analysis (max 200 words) with clear suggestions. Do not use emojis, keep the tone minimalist, clinical, and motivational.
-User Profile: Height: ${user.height}cm, Target Weight: ${user.targetWeight}kg.
-Recent Sleep Logs:
+      const goal = user.ultimateGoal || { title: 'Not Set', description: 'None', targetDate: 'N/A' };
+
+      const prompt = `You are a premium, highly scientific AI Life Coach. Analyze this user's data and provide a concise, direct, clinical and motivational summary (max 200 words).
+Evaluate the user's progress toward their Ultimate Goal:
+Goal Title: "${goal.title}"
+Goal Description: "${goal.description}"
+Goal Target Date: ${goal.targetDate}
+
+Analyze their recent habits, daily task completions, sleep quality/scores, and fitness logs.
+Provide a clear analysis on whether they are "doing well" or "need to work harder". Give specific, actionable adjustments. Do not use emojis, keep the tone minimalist and professional.
+
+User Stats: Height ${user.height}cm, Target Weight ${user.targetWeight}kg.
+Recent Sleep History:
 ${sleepSummary || 'No data'}
-Recent Habits / Tasks:
+Recent Task Lists:
 ${taskSummary || 'No data'}
-Recent Fitness Logs:
+Recent Fitness History:
 ${fitnessSummary || 'No data'}
 Recent Mood Logs:
 ${moodSummary || 'No data'}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${user.geminiApiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -251,7 +274,7 @@ ${moodSummary || 'No data'}`;
         geminiAdvice = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
       } else {
         console.error('Gemini API call failed with status:', response.status);
-        geminiAdvice = 'Gemini API connection error. Check your API key in settings.';
+        geminiAdvice = 'Gemini API connection error. Check configuration.';
       }
     } catch (error) {
       console.error('Error invoking Gemini:', error);

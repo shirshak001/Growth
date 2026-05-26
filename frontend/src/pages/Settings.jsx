@@ -10,6 +10,9 @@ const Settings = () => {
   const [height, setHeight] = useState(user?.height || 170);
   const [targetWeight, setTargetWeight] = useState(user?.targetWeight || 70);
   const [gender, setGender] = useState(user?.gender || 'male');
+  const [goalTitle, setGoalTitle] = useState(user?.ultimateGoal?.title || '');
+  const [goalDate, setGoalDate] = useState(user?.ultimateGoal?.targetDate || '');
+  const [goalDescription, setGoalDescription] = useState(user?.ultimateGoal?.description || '');
   const [geminiApiKey, setGeminiApiKey] = useState(user?.geminiApiKey || '');
 
   const [message, setMessage] = useState('');
@@ -28,6 +31,11 @@ const Settings = () => {
         height: Number(height),
         targetWeight: Number(targetWeight),
         gender,
+        ultimateGoal: {
+          title: goalTitle,
+          targetDate: goalDate,
+          description: goalDescription
+        },
         geminiApiKey
       });
       setMessage('Profile updated successfully.');
@@ -127,6 +135,46 @@ const Settings = () => {
                 value={targetWeight}
                 onChange={(e) => setTargetWeight(e.target.value)}
                 required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Ultimate Goal Group */}
+        <div>
+          <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '6px' }}>
+            Ultimate Goal
+          </span>
+
+          <div className="form-group">
+            <label className="form-label">Goal Title</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="e.g. Become a Software Engineer, Run a Marathon"
+              value={goalTitle}
+              onChange={(e) => setGoalTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Target Date</label>
+              <input
+                type="date"
+                className="form-input"
+                value={goalDate}
+                onChange={(e) => setGoalDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Goal Description</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="What exactly do you want to accomplish?"
+                value={goalDescription}
+                onChange={(e) => setGoalDescription(e.target.value)}
               />
             </div>
           </div>

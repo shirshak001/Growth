@@ -29,7 +29,7 @@ const calculateSleepDuration = (sleep, wake) => {
 // ==========================================
 
 export const logSleep = async (req, res) => {
-  const { date, sleepTime, wakeTime, quality } = req.body;
+  const { date, sleepTime, wakeTime, quality, sleepLatency, restlessness, wakeEnergy } = req.body;
   const userId = req.userId;
 
   if (!date || !sleepTime || !wakeTime || !quality) {
@@ -37,6 +37,31 @@ export const logSleep = async (req, res) => {
   }
 
   const duration = calculateSleepDuration(sleepTime, wakeTime);
+  
+  // Calculate sleepScore
+  const latencyVal = Number(sleepLatency !== undefined ? sleepLatency : 15);
+  const restlessnessVal = Number(restlessness !== undefined ? restlessness : 1);
+  const energyVal = Number(wakeEnergy !== undefined ? wakeEnergy : 3);
+  const qualityVal = Number(quality);
+
+  // Duration score component (out of 40 points, ideal is 7-9 hours)
+  let durationScore = 0;
+  if (duration >= 7 && duration <= 9) durationScore = 40;
+  else if (duration > 9) durationScore = 40 - (duration - 9) * 10;
+  else durationScore = (duration / 7) * 40;
+  durationScore = Math.max(0, durationScore);
+
+  // Quality score component (out of 30 points)
+  const qualityScore = (qualityVal / 5) * 30;
+
+  // Energy score component (out of 30 points)
+  const energyScore = (energyVal / 5) * 30;
+
+  // Penalties
+  const latencyPenalty = latencyVal > 30 ? Math.min(10, (latencyVal - 30) / 3) : 0;
+  const restlessnessPenalty = (restlessnessVal - 1) * 3;
+
+  const sleepScore = Math.max(10, Math.round(durationScore + qualityScore + energyScore - latencyPenalty - restlessnessPenalty));
 
   // Check if sleep log exists for this date
   const existingLog = db.findOne('sleepLogs', log => log.userId === userId && log.date === date);
@@ -47,7 +72,11 @@ export const logSleep = async (req, res) => {
       sleepTime,
       wakeTime,
       duration,
-      quality: Number(quality)
+      quality: qualityVal,
+      sleepLatency: latencyVal,
+      restlessness: restlessnessVal,
+      wakeEnergy: energyVal,
+      sleepScore
     });
     result = db.findOne('sleepLogs', log => log.id === existingLog.id);
   } else {
@@ -57,7 +86,11 @@ export const logSleep = async (req, res) => {
       sleepTime,
       wakeTime,
       duration,
-      quality: Number(quality)
+      quality: qualityVal,
+      sleepLatency: latencyVal,
+      restlessness: restlessnessVal,
+      wakeEnergy: energyVal,
+      sleepScore
     });
   }
 
@@ -83,7 +116,7 @@ export const getTasks = async (req, res) => {
 };
 
 export const addTask = async (req, res) => {
-  const { title, isMandatory, category } = req.body;
+  const { title, isMandatory, category, dueTime } = req.body;
   const userId = req.userId;
 
   if (!title) {
@@ -95,6 +128,7 @@ export const addTask = async (req, res) => {
     title,
     isMandatory: !!isMandatory,
     category: category || 'custom',
+    dueTime: dueTime || null, // HH:MM
     completedDates: [],
     isActive: true,
     createdAt: new Date().toISOString()
