@@ -6,6 +6,7 @@ import {
   Brain, 
   BookOpen,
   TrendingUp, 
+  Trophy,
   Settings, 
   LogOut 
 } from 'lucide-react';
@@ -18,6 +19,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'fitness', label: 'Fitness & Health', icon: Dumbbell },
     { id: 'mindset', label: 'Self-Development', icon: Brain },
     { id: 'strategist', label: 'Study Strategist', icon: BookOpen },
+    { id: 'competitive', label: 'Competitive Arena', icon: Trophy },
     { id: 'analytics', label: 'Analytics & Growth', icon: TrendingUp },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

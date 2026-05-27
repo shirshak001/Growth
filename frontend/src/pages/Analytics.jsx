@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -8,6 +8,7 @@ import {
   PointElement, 
   LineElement, 
   BarElement, 
+  ArcElement,
   Title, 
   Tooltip, 
   Legend, 
@@ -21,6 +22,7 @@ ChartJS.register(
   PointElement, 
   LineElement, 
   BarElement, 
+  ArcElement,
   Title, 
   Tooltip, 
   Legend, 
@@ -364,6 +366,75 @@ const Analytics = () => {
     }
   };
 
+  // 6. DATA PREPARATION: Doughnut Chart 1 - Dopamine Distraction Breakdown
+  const totalInsta = dopamineLogs.reduce((acc, l) => acc + (l.instagramMins || 0), 0);
+  const totalYt = dopamineLogs.reduce((acc, l) => acc + (l.youtubeMins || 0), 0);
+  const totalScroll = dopamineLogs.reduce((acc, l) => acc + (l.scrollingMins || 0), 0);
+  const hasDopamineData = totalInsta > 0 || totalYt > 0 || totalScroll > 0;
+
+  const dopaminePieData = {
+    labels: ['Instagram', 'YouTube', 'Other Feed'],
+    datasets: [
+      {
+        data: [totalInsta, totalYt, totalScroll],
+        backgroundColor: [
+          'rgba(239, 68, 68, 0.65)',
+          'rgba(99, 102, 241, 0.65)',
+          'rgba(245, 158, 11, 0.65)'
+        ],
+        borderColor: [
+          '#ef4444',
+          '#6366f1',
+          '#f59e0b'
+        ],
+        borderWidth: 1
+      }
+    ]
+  };
+
+  // 7. DATA PREPARATION: Doughnut Chart 2 - Task Category Breakdown
+  const studyCount = tasks.filter(t => t.category === 'study').length;
+  const fitnessCount = tasks.filter(t => t.category === 'fitness').length;
+  const routineCount = tasks.filter(t => t.category === 'routine' || t.isMandatory).length;
+  const customCount = tasks.filter(t => t.category !== 'study' && t.category !== 'fitness' && !(t.category === 'routine' || t.isMandatory)).length;
+  const hasTaskData = tasks.length > 0;
+
+  const taskPieData = {
+    labels: ['Study', 'Fitness', 'Routine', 'Custom'],
+    datasets: [
+      {
+        data: [studyCount, fitnessCount, routineCount, customCount],
+        backgroundColor: [
+          'rgba(16, 185, 129, 0.65)',
+          'rgba(59, 130, 246, 0.65)',
+          'rgba(245, 158, 11, 0.65)',
+          'rgba(148, 163, 184, 0.65)'
+        ],
+        borderColor: [
+          '#10b981',
+          '#3b82f6',
+          '#f59e0b',
+          '#94a3b8'
+        ],
+        borderWidth: 1
+      }
+    ]
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          color: '#e2e8f0',
+          font: { size: 11, family: 'Outfit, sans-serif' }
+        }
+      }
+    }
+  };
+
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
@@ -447,21 +518,53 @@ const Analytics = () => {
 
           {/* Tab 2: Time & Focus */}
           {activeSubTab === 'focus' && (
-            <div className="grid-2" style={{ gap: '20px', flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
               
-              {/* Planned vs Actual hours */}
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Planned vs Actual Workload (Reality Check)</span>
-                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                  <Bar data={hoursChartData} options={hoursChartOptions} />
+              <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
+                {/* Planned vs Actual hours */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Planned vs Actual Workload (Reality Check)</span>
+                  <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                    <Bar data={hoursChartData} options={hoursChartOptions} />
+                  </div>
+                </div>
+
+                {/* Distraction minutes correlation */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Digital Distraction vs Task Completion Correlation</span>
+                  <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                    <Line data={correlationChartData} options={correlationChartOptions} />
+                  </div>
                 </div>
               </div>
 
-              {/* Distraction minutes correlation */}
-              <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Digital Distraction vs Task Completion Correlation</span>
-                <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
-                  <Line data={correlationChartData} options={correlationChartOptions} />
+              <div className="grid-2" style={{ gap: '20px', minHeight: '300px' }}>
+                {/* Distraction Breakdown Doughnut */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Screen Time Distraction Breakdown</span>
+                  <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                    {!hasDopamineData ? (
+                      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                        No distraction logs available. Log screen time on the dashboard to visualize.
+                      </div>
+                    ) : (
+                      <Doughnut data={dopaminePieData} options={doughnutOptions} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Task Distribution Doughnut */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px', flexShrink: 0 }}>Task Category Distribution</span>
+                  <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+                    {!hasTaskData ? (
+                      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                        No tasks defined. Add tasks to see distribution.
+                      </div>
+                    ) : (
+                      <Doughnut data={taskPieData} options={doughnutOptions} />
+                    )}
+                  </div>
                 </div>
               </div>
 

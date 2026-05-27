@@ -10,6 +10,7 @@ import Settings from './pages/Settings';
 import { LogOut, Zap } from 'lucide-react';
 import StudyStrategist from './pages/StudyStrategist';
 import AICompanion from './components/AICompanion';
+import Competitive from './pages/Competitive';
 
 const NavigationContainer = () => {
   const { user, loading, logout } = useAuth();
@@ -48,6 +49,8 @@ const NavigationContainer = () => {
         return <SelfDevelopment />;
       case 'strategist':
         return <StudyStrategist />;
+      case 'competitive':
+        return <Competitive />;
       case 'analytics':
         return <Analytics />;
       case 'settings':
@@ -63,6 +66,7 @@ const NavigationContainer = () => {
       case 'fitness': return 'Fitness Metrics & Hydration';
       case 'mindset': return 'Mindset & Self-Development';
       case 'strategist': return 'AI Study Strategist & Roadmap';
+      case 'competitive': return 'Competitive Arena & Duels';
       case 'analytics': return 'Performance Charts & AI Insights';
       case 'settings': return 'Profile Configuration';
       default: return 'Dashboard';
@@ -81,6 +85,26 @@ const NavigationContainer = () => {
             <h2>{getHeaderTitle()}</h2>
           </div>
           <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {user?.notifications && user.notifications.length > 0 && (
+              <button 
+                onClick={() => setActiveTab('competitive')} 
+                style={{
+                  background: 'var(--color-primary-glow)',
+                  border: '1px solid var(--color-primary)',
+                  color: 'var(--color-primary)',
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Zap size={11} /> {user.notifications.length} Alerts
+              </button>
+            )}
             <span className="session-name" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               Session: <strong>{user.name}</strong>
             </span>

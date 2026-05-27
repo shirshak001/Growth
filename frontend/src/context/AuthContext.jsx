@@ -99,6 +99,21 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const refreshProfile = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(prev => ({ ...prev, ...data }));
+      }
+    } catch (e) {
+      console.error('Failed to refresh profile', e);
+    }
+  };
+
   const updateProfile = async (profileData) => {
     if (!token) return;
     const res = await fetch(`${API_BASE}/auth/profile`, {
@@ -115,6 +130,26 @@ export const AuthProvider = ({ children }) => {
     }
     setUser((prev) => ({ ...prev, ...data }));
     return data;
+  };
+
+  const addFriend = async (email) => {
+    const res = await authFetch('/auth/friends/add', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Failed to add friend');
+    }
+    await refreshProfile();
+    return data;
+  };
+
+  const clearNotifications = async () => {
+    const res = await authFetch('/auth/notifications/clear', { method: 'POST' });
+    if (res.ok) {
+      setUser(prev => ({ ...prev, notifications: [] }));
+    }
   };
 
   // Helper fetch method with JWT headers
@@ -138,7 +173,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateProfile, authFetch }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      updateProfile, 
+      authFetch, 
+      addFriend, 
+      clearNotifications,
+      refreshProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );
