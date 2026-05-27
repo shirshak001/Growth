@@ -100,7 +100,7 @@ Generate an advanced, highly realistic, milestone-based adaptive roadmap, weak-s
 Provide structured layout blocks (e.g. Phase 1, Phase 2, Revision loops). Limit to 250 words. Do not use emojis, keep the tone minimalist, clinical, and elite.`;
 
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

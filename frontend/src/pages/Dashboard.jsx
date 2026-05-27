@@ -713,33 +713,32 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="sleep-inputs">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Latency (mins)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input"
-                    value={sleepLatency}
-                    onChange={(e) => setSleepLatency(Number(e.target.value))}
-                    required
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Restlessness</label>
-                  <select
-                    className="form-input"
-                    value={restlessness}
-                    onChange={(e) => setRestlessness(Number(e.target.value))}
-                    required
-                  >
-                    <option value={1}>1 - Calm / Peaceful</option>
-                    <option value={2}>2 - Light tossing</option>
-                    <option value={3}>3 - Tossed & turned</option>
-                    <option value={4}>4 - Frequent waking</option>
-                    <option value={5}>5 - Very restless</option>
-                  </select>
-                </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Latency (mins)</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input"
+                  value={sleepLatency}
+                  onChange={(e) => setSleepLatency(Number(e.target.value))}
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Restlessness</label>
+                <select
+                  className="form-input"
+                  value={restlessness}
+                  onChange={(e) => setRestlessness(Number(e.target.value))}
+                  required
+                >
+                  <option value={1}>1 - Calm / Peaceful</option>
+                  <option value={2}>2 - Light tossing</option>
+                  <option value={3}>3 - Tossed & turned</option>
+                  <option value={4}>4 - Frequent waking</option>
+                  <option value={5}>5 - Very restless</option>
+                </select>
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>

@@ -326,7 +326,7 @@ Recent Mood Logs:
 ${moodSummary || 'No data'}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -384,7 +384,7 @@ For example, instead of "Study Physics" suggest "Open Chapter 3 and solve only 2
 Keep the suggestion to a single brief sentence of maximum 20 words. Do not use emojis, keep the tone minimalist and direct.`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {

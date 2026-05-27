@@ -429,7 +429,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .card:hover {
@@ -1023,6 +1023,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.inner-column > .card {
+  flex-shrink: 0;
 }
 
 /* Low-Dopamine Grayscale Mode */
