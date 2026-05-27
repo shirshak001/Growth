@@ -59,6 +59,42 @@ const SelfDevelopment = () => {
     setTimerMinutes(focusMode ? 25 : 5);
     setTimerSeconds(0);
   };
+
+  const [customVideos, setCustomVideos] = useState(() => {
+    const saved = localStorage.getItem('growth_motivation_videos');
+    return saved ? JSON.parse(saved) : [
+      { id: 'wzXqE1qJ6y4', title: 'Daily Discipline & Focus Speech' },
+      { id: 'jfKfPfyJRdk', title: 'Ambient Lofi Coding/Study Beats' }
+    ];
+  });
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [newVideoTitle, setNewVideoTitle] = useState('');
+
+  const handleAddVideo = (e) => {
+    e.preventDefault();
+    if (!newVideoUrl.trim() || !newVideoTitle.trim()) return;
+
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = newVideoUrl.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+
+    if (!videoId) {
+      alert('Please enter a valid YouTube video URL');
+      return;
+    }
+
+    const updated = [...customVideos, { id: videoId, title: newVideoTitle }];
+    setCustomVideos(updated);
+    localStorage.setItem('growth_motivation_videos', JSON.stringify(updated));
+    setNewVideoUrl('');
+    setNewVideoTitle('');
+  };
+
+  const handleDeleteVideo = (idToDelete) => {
+    const updated = customVideos.filter(v => v.id !== idToDelete);
+    setCustomVideos(updated);
+    localStorage.setItem('growth_motivation_videos', JSON.stringify(updated));
+  };
   
   const [loading, setLoading] = useState(true);
 
@@ -244,7 +280,7 @@ const SelfDevelopment = () => {
           </div>
 
           {/* Reflections History List */}
-          <div className="card" style={{ flex: 1, minHeight: 0 }}>
+          <div className="card" style={{ flexShrink: 0, minHeight: '260px' }}>
             <span className="card-title">Reflection History</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
               {moodLogs.length === 0 ? (
@@ -268,33 +304,64 @@ const SelfDevelopment = () => {
           </div>
 
           {/* Motivation Corner */}
-          <div className="card" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <div className="card" style={{ flexShrink: 0 }}>
             <span className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
               <BookOpen size={14} style={{ color: 'var(--color-warning)' }} /> Motivation Corner
             </span>
-            <div className="motivation-grid">
-              <div className="video-card">
-                <span className="video-title">Daily Discipline & Focus Speech</span>
-                <div className="video-container">
-                  <iframe 
-                    src="https://www.youtube.com/embed/wzXqE1qJ6y4" 
-                    title="Discipline & Focus"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
+            
+            {/* Add Custom Video Form */}
+            <form onSubmit={handleAddVideo} style={{ marginBottom: '16px', background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '8px' }}>
+              <span className="form-label" style={{ fontSize: '11px', marginBottom: '8px', display: 'block' }}>Add Youtube Motivation/Study Video</span>
+              <div className="flex flex-column gap-8">
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Video Title (e.g. David Goggins Mindset)"
+                  value={newVideoTitle}
+                  onChange={(e) => setNewVideoTitle(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '12px' }}
+                  required
+                />
+                <div className="flex gap-8">
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={newVideoUrl}
+                    onChange={(e) => setNewVideoUrl(e.target.value)}
+                    style={{ flex: 1, padding: '6px 10px', fontSize: '12px' }}
+                    required
                   />
+                  <button type="submit" className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '12px' }}>
+                    Add
+                  </button>
                 </div>
               </div>
-              <div className="video-card">
-                <span className="video-title">Ambient Lofi Coding/Study Beats</span>
-                <div className="video-container">
-                  <iframe 
-                    src="https://www.youtube.com/embed/jfKfPfyJRdk" 
-                    title="Focus Lofi Beats"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
-                  />
+            </form>
+
+            <div className="motivation-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
+              {customVideos.map((video) => (
+                <div key={video.id} className="video-card" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px' }}>
+                  <div className="flex justify-between align-center" style={{ marginBottom: '6px' }}>
+                    <span className="video-title" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{video.title}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => handleDeleteVideo(video.id)} 
+                      style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '10px' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="video-container">
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${video.id}`}
+                      title={video.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    />
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -332,7 +399,7 @@ const SelfDevelopment = () => {
             </div>
           </div>
 
-          <div className="card" style={{ flex: 1, minHeight: 0 }}>
+          <div className="card" style={{ flexShrink: 0 }}>
             <span className="card-title">
               <span>Pomodoro Focus Timer</span>
               <Brain size={16} style={{ color: 'var(--color-primary)' }} />
