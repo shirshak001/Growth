@@ -32,10 +32,20 @@ app.use('/api/mood', moodRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/period', periodRoutes);
 
-// Base route
-app.get('/', (req, res) => {
-  res.send('Growth App API is running...');
-});
+// Serve static assets in production (any environment other than development)
+if (process.env.NODE_ENV !== 'development') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  
+  // Any non-API route should serve index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  });
+} else {
+  // Base route for development
+  app.get('/', (req, res) => {
+    res.send('Growth App API is running...');
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

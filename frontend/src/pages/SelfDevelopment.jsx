@@ -62,10 +62,7 @@ const SelfDevelopment = () => {
 
   const [customVideos, setCustomVideos] = useState(() => {
     const saved = localStorage.getItem('growth_motivation_videos');
-    return saved ? JSON.parse(saved) : [
-      { id: 'wzXqE1qJ6y4', title: 'Daily Discipline & Focus Speech' },
-      { id: 'jfKfPfyJRdk', title: 'Ambient Lofi Coding/Study Beats' }
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
   const [newVideoUrl, setNewVideoUrl] = useState('');
   const [newVideoTitle, setNewVideoTitle] = useState('');
@@ -340,28 +337,34 @@ const SelfDevelopment = () => {
             </form>
 
             <div className="motivation-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
-              {customVideos.map((video) => (
-                <div key={video.id} className="video-card" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px' }}>
-                  <div className="flex justify-between align-center" style={{ marginBottom: '6px' }}>
-                    <span className="video-title" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{video.title}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => handleDeleteVideo(video.id)} 
-                      style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '10px' }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <div className="video-container">
-                    <iframe 
-                      src={`https://www.youtube.com/embed/${video.id}`}
-                      title={video.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                      allowFullScreen
-                    />
-                  </div>
+              {customVideos.length === 0 ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '12px', border: '1px dashed var(--border-color)', borderRadius: '8px', width: '100%' }}>
+                  No motivational videos added yet. Paste a YouTube link above to add your favorite study beats or speeches!
                 </div>
-              ))}
+              ) : (
+                customVideos.map((video) => (
+                  <div key={video.id} className="video-card" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px' }}>
+                    <div className="flex justify-between align-center" style={{ marginBottom: '6px' }}>
+                      <span className="video-title" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{video.title}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => handleDeleteVideo(video.id)} 
+                        style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '10px' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="video-container">
+                      <iframe 
+                        src={`https://www.youtube.com/embed/${video.id}`}
+                        title={video.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

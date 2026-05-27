@@ -9,7 +9,6 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import { LogOut, Zap } from 'lucide-react';
 import StudyStrategist from './pages/StudyStrategist';
-import AICompanion from './components/AICompanion';
 import Competitive from './pages/Competitive';
 
 const NavigationContainer = () => {
@@ -131,7 +130,6 @@ const NavigationContainer = () => {
           {renderContent()}
         </main>
       </div>
-      <AICompanion />
     </div>
   );
 };
