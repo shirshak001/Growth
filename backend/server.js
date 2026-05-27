@@ -26,13 +26,19 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/routine', routineRoutes);
-app.use('/api/fitness', fitnessRoutes);
-app.use('/api/mood', moodRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/period', periodRoutes);
-app.use('/api/finance', financeRoutes);
+const registerRoutes = (prefix) => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/routine`, routineRoutes);
+  app.use(`${prefix}/fitness`, fitnessRoutes);
+  app.use(`${prefix}/mood`, moodRoutes);
+  app.use(`${prefix}/ai`, aiRoutes);
+  app.use(`${prefix}/period`, periodRoutes);
+  app.use(`${prefix}/finance`, financeRoutes);
+};
+
+registerRoutes('/api');
+registerRoutes('');
+
 
 // Serve static assets in production (any environment other than development)
 if (process.env.NODE_ENV !== 'development') {
