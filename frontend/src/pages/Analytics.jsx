@@ -14,7 +14,7 @@ import {
   Legend, 
   Filler 
 } from 'chart.js';
-import { Sparkles, TrendingUp, RefreshCw, Info, Calendar, Clock, BarChart2 } from 'lucide-react';
+import { Sparkles, TrendingUp, RefreshCw, Info, Calendar, Clock, BarChart2, Coins } from 'lucide-react';
 
 ChartJS.register(
   CategoryScale, 
@@ -37,6 +37,7 @@ const Analytics = () => {
   const [fitnessLogs, setFitnessLogs] = useState([]);
   const [moodLogs, setMoodLogs] = useState([]);
   const [dopamineLogs, setDopamineLogs] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [geminiAdvice, setGeminiAdvice] = useState('');
   const [burnoutProb, setBurnoutProb] = useState(null);
@@ -74,6 +75,13 @@ const Analytics = () => {
       if (dopRes.ok) {
         const dopData = await dopRes.json();
         setDopamineLogs([...dopData].reverse());
+      }
+
+      // Fetch Finance logs
+      const finRes = await authFetch('/finance');
+      if (finRes.ok) {
+        const finData = await finRes.json();
+        setTransactions(finData);
       }
 
     } catch (error) {
@@ -415,6 +423,102 @@ const Analytics = () => {
           '#3b82f6',
           '#f59e0b',
           '#94a3b8'
+        ],
+        borderWidth: 1
+      }
+    ]
+  };
+
+  // 8. DATA PREPARATION: Finance Comparison Chart (last 7 days)
+  const financeDaysData = dateLabels.map(date => {
+    const dayIncome = transactions
+      .filter(tx => tx.date === date && tx.type === 'income')
+      .reduce((acc, tx) => acc + tx.amount, 0);
+    const dayExpense = transactions
+      .filter(tx => tx.date === date && tx.type === 'expense')
+      .reduce((acc, tx) => acc + tx.amount, 0);
+    return { income: dayIncome, expense: dayExpense };
+  });
+
+  const financeCompareChartData = {
+    labels: dateLabels.map(d => d.slice(5)), // display MM-DD
+    datasets: [
+      {
+        label: 'Income (₹)',
+        data: financeDaysData.map(d => d.income),
+        backgroundColor: 'rgba(16, 185, 129, 0.65)',
+        borderColor: 'var(--color-success)',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'Expenses (₹)',
+        data: financeDaysData.map(d => d.expense),
+        backgroundColor: 'rgba(239, 68, 68, 0.65)',
+        borderColor: 'var(--color-danger)',
+        borderWidth: 1,
+        borderRadius: 4
+      }
+    ]
+  };
+
+  const financeCompareChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        ticks: { color: '#6b7280' },
+        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+        title: { display: true, text: 'Amount (₹)', color: '#9ca3af' }
+      },
+      x: {
+        ticks: { color: '#6b7280' },
+        grid: { display: false }
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#f3f4f6' } }
+    }
+  };
+
+  // 9. DATA PREPARATION: Finance Category Outflow Distribution (Doughnut)
+  const expenseCategoriesList = [
+    'Food', 'Rent', 'Utilities', 'Entertainment', 'Books/Education', 'Health/Fitness', 'Transport', 'Shopping', 'Custom Expense'
+  ];
+  const financeCategoryTotals = expenseCategoriesList.map(cat => {
+    return transactions
+      .filter(tx => tx.type === 'expense' && tx.category === cat)
+      .reduce((acc, tx) => acc + tx.amount, 0);
+  });
+
+  const hasFinanceExpenses = financeCategoryTotals.some(val => val > 0);
+
+  const financeDoughnutChartData = {
+    labels: expenseCategoriesList.filter((_, idx) => financeCategoryTotals[idx] > 0),
+    datasets: [
+      {
+        data: financeCategoryTotals.filter(val => val > 0),
+        backgroundColor: [
+          'rgba(239, 68, 68, 0.6)',
+          'rgba(99, 102, 241, 0.6)',
+          'rgba(245, 158, 11, 0.6)',
+          'rgba(168, 85, 247, 0.6)',
+          'rgba(16, 185, 129, 0.6)',
+          'rgba(59, 130, 246, 0.6)',
+          'rgba(236, 72, 153, 0.6)',
+          'rgba(20, 184, 166, 0.6)',
+          'rgba(100, 116, 139, 0.6)'
+        ],
+        borderColor: [
+          '#ef4444',
+          '#6366f1',
+          '#f59e0b',
+          '#a855f7',
+          '#10b981',
+          '#3b82f6',
+          '#ec4899',
+          '#14b8a6',
+          '#64748b'
         ],
         borderWidth: 1
       }

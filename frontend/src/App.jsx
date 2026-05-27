@@ -10,6 +10,8 @@ import Settings from './pages/Settings';
 import { LogOut, Zap } from 'lucide-react';
 import StudyStrategist from './pages/StudyStrategist';
 import Competitive from './pages/Competitive';
+import TaskManager from './pages/TaskManager';
+import Finance from './pages/Finance';
 
 const NavigationContainer = () => {
   const { user, loading, logout } = useAuth();
@@ -42,6 +44,8 @@ const NavigationContainer = () => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'tasks':
+        return <TaskManager />;
       case 'fitness':
         return <Fitness />;
       case 'mindset':
@@ -50,6 +54,8 @@ const NavigationContainer = () => {
         return <StudyStrategist />;
       case 'competitive':
         return <Competitive />;
+      case 'finance':
+        return <Finance />;
       case 'analytics':
         return <Analytics />;
       case 'settings':
@@ -61,11 +67,13 @@ const NavigationContainer = () => {
 
   const getHeaderTitle = () => {
     switch (activeTab) {
-      case 'dashboard': return 'Daily Dashboard & Routines';
+      case 'dashboard': return 'Daily Dashboard & Reports';
+      case 'tasks': return 'Daily Tasks & Log Planner';
       case 'fitness': return 'Fitness Metrics & Hydration';
       case 'mindset': return 'Mindset & Self-Development';
       case 'strategist': return 'AI Study Strategist & Roadmap';
       case 'competitive': return 'Competitive Arena & Duels';
+      case 'finance': return 'Financial Planner & Tracker';
       case 'analytics': return 'Performance Charts & AI Insights';
       case 'settings': return 'Profile Configuration';
       default: return 'Dashboard';

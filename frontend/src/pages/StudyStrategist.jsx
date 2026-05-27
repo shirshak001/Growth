@@ -61,8 +61,7 @@ const StudyStrategist = () => {
     e.preventDefault();
     setSavingPlan(true);
     try {
-      // Save details first
-      const res = await authFetch('/routine/strategist', {
+      const res = await authFetch('/ai/roadmap', {
         method: 'POST',
         body: JSON.stringify({
           targetExam,
@@ -73,73 +72,14 @@ const StudyStrategist = () => {
       });
 
       if (res.ok) {
-        // Generate AI Roadmap
-        await generateAiRoadmap();
+        const data = await res.json();
+        setAiRoadmap(data.aiRoadmap || '');
       }
     } catch (error) {
       console.error('Failed to save study strategy plan:', error);
     } finally {
       setSavingPlan(false);
     }
-  };
-
-  const generateAiRoadmap = async () => {
-    setSavingPlan(true);
-    const apiKey = user?.geminiApiKey || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0'; // Use seeded key fallback
-    let generatedRoadmap = '';
-
-    if (apiKey) {
-      try {
-        const prompt = `You are a world-class AI Study Strategist and Exam Performance Consultant.
-The student is preparing for: "${targetExam}"
-Target Exam Date: ${examDate || 'Not specified'}
-Weak Subjects/Topics: "${weakSubjects || 'All general topics'}"
-Available Daily Study Hours: ${availableHours} hours
-
-Generate an advanced, highly realistic, milestone-based adaptive roadmap, weak-subject spacing loops, and burnout prevention tips.
-Provide structured layout blocks (e.g. Phase 1, Phase 2, Revision loops). Limit to 250 words. Do not use emojis, keep the tone minimalist, clinical, and elite.`;
-
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-          }
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          generatedRoadmap = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        } else {
-          generatedRoadmap = 'Failed to generate roadmap from API. Reverting to static rules.';
-        }
-      } catch (error) {
-        console.error('Gemini error:', error);
-        generatedRoadmap = 'Connection timed out. Reverting to static rules.';
-      }
-    }
-
-    if (!generatedRoadmap || generatedRoadmap.startsWith('Failed') || generatedRoadmap.startsWith('Connection')) {
-      // Heuristic fallback
-      generatedRoadmap = `[Adaptive Local Roadmap: ${targetExam}]\n\n` +
-        `• PHASE 1 (Core Focus): Dedicate 60% of your daily ${availableHours}h block to [${weakSubjects || 'weak topics'}] revision.\n` +
-        `• PHASE 2 (Spaced Recall): Solve mock tests every 3 days. Dedicate 2 hours to active diagnostic corrections.\n` +
-        `• RECOVERY: Take a 15-minute screen-free walk after every 90-minute focus study block to avoid early burnout.`;
-    }
-
-    // Save final roadmap to backend
-    await authFetch('/routine/strategist', {
-      method: 'POST',
-      body: JSON.stringify({
-        targetExam,
-        examDate,
-        weakSubjects,
-        availableHours: Number(availableHours),
-        aiRoadmap: generatedRoadmap
-      })
-    });
-    setAiRoadmap(generatedRoadmap);
   };
 
   const handleLogMockTest = async (e) => {

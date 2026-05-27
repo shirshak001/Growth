@@ -1,9 +1,128 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CheckSquare, Moon, Sun, Plus, Trash2, Award, Clock, Target, AlertCircle, Zap, Brain, BookOpen } from 'lucide-react';
+import { 
+  Moon, 
+  Sun, 
+  Award, 
+  Clock, 
+  Target, 
+  AlertCircle, 
+  Zap, 
+  Brain, 
+  Bell, 
+  Calendar, 
+  Activity, 
+  Flame, 
+  Compass, 
+  ChevronRight, 
+  CheckCircle2, 
+  Sparkles 
+} from 'lucide-react';
+
+// Reusable Circular Progress Ring for premium reporting
+const CircularProgress = ({ value, size = 70, strokeWidth = 6, color = 'var(--color-primary)', glow = false }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const safeValue = Math.min(100, Math.max(0, value || 0));
+  const strokeDashoffset = circumference - (safeValue / 100) * circumference;
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+        {/* Glow filter if enabled */}
+        {glow && (
+          <defs>
+            <filter id={`glow-${color.replace(/[^a-zA-Z0-9]/g, '')}`} x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+        )}
+        
+        {/* Background Circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          stroke="rgba(255, 255, 255, 0.04)"
+          strokeWidth={strokeWidth}
+        />
+        
+        {/* Progress Circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          filter={glow ? `url(#glow-${color.replace(/[^a-zA-Z0-9]/g, '')})` : undefined}
+          style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
+        {safeValue}%
+      </div>
+    </div>
+  );
+};
+
+// Shadcn-style Wireframe skeleton for Dashboard page
+const DashboardSkeleton = () => (
+  <div className="grid-dash animate-fadein" style={{ opacity: 0.7 }}>
+    {/* Left Column Skeleton */}
+    <div className="inner-column" style={{ gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+        {[1, 2, 3].map(i => (
+          <div key={i} className="skeleton-card" style={{ height: '200px', alignItems: 'center', justifyItems: 'center', textAlign: 'center' }}>
+            <div className="skeleton" style={{ width: '60%', height: '12px', marginBottom: '14px' }} />
+            <div className="skeleton skeleton-circle" style={{ width: '80px', height: '80px', borderRadius: '50%' }} />
+            <div className="skeleton" style={{ width: '70%', height: '16px', marginTop: '16px' }} />
+          </div>
+        ))}
+      </div>
+      <div className="skeleton-card" style={{ height: '300px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px' }}>
+          <div className="skeleton" style={{ width: '40%', height: '16px' }} />
+          <div className="skeleton" style={{ width: '15px', height: '15px' }} />
+        </div>
+        <div className="skeleton" style={{ width: '100%', height: '80px', borderRadius: '8px', marginBottom: '20px' }} />
+        <div className="skeleton" style={{ width: '30%', height: '14px', marginBottom: '12px' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="skeleton" style={{ width: '80%', height: '12px' }} />
+          <div className="skeleton" style={{ width: '90%', height: '12px' }} />
+          <div className="skeleton" style={{ width: '85%', height: '12px' }} />
+        </div>
+      </div>
+    </div>
+    {/* Right Column Skeleton */}
+    <div className="inner-column" style={{ gap: '20px' }}>
+      <div className="skeleton-card" style={{ height: '320px' }}>
+        <div className="skeleton" style={{ width: '50%', height: '16px', marginBottom: '20px' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="skeleton" style={{ width: '100%', height: '50px', borderRadius: '8px' }} />
+          ))}
+        </div>
+      </div>
+      <div className="skeleton-card" style={{ height: '180px' }}>
+        <div className="skeleton" style={{ width: '40%', height: '12px', marginBottom: '12px' }} />
+        <div className="skeleton" style={{ width: '60%', height: '18px', marginBottom: '12px' }} />
+        <div className="skeleton" style={{ width: '100%', height: '30px', borderRadius: '6px' }} />
+      </div>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
-  const { authFetch, user } = useAuth();
+  const { authFetch, user, clearNotifications } = useAuth();
   
   const getDaysRemaining = (targetDateStr) => {
     if (!targetDateStr) return null;
@@ -16,7 +135,6 @@ const Dashboard = () => {
     return diffDays;
   };
 
-  // Date state
   const getTodayString = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -24,47 +142,25 @@ const Dashboard = () => {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
+
+  const formatDisplayDate = (dateStr) => {
+    try {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateStr).toLocaleDateString('en-US', options);
+    } catch (e) {
+      return dateStr;
+    }
+  };
   
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [tasks, setTasks] = useState([]);
   const [sleepLog, setSleepLog] = useState(null);
+  const [dopamineLog, setDopamineLog] = useState(null);
 
   // AI Life Operator / Burnout states
   const [lifeScore, setLifeScore] = useState(null);
   const [burnoutProb, setBurnoutProb] = useState(null);
   const [lifeOperatorSuggestion, setLifeOperatorSuggestion] = useState('');
-
-  // Procrastination breakdown states
-  const [activeMicroTask, setActiveMicroTask] = useState(null);
-  const [panicCountdown, setPanicCountdown] = useState(0);
-
-  // Crisis Recovery Mode state
-  const [crisisRecovery, setCrisisRecovery] = useState(false);
-  const [crisisCompleted, setCrisisCompleted] = useState({ water: false, study: false });
-
-  // Dopamine tracker states
-  const [instaMins, setInstaMins] = useState(0);
-  const [ytMins, setYtMins] = useState(0);
-  const [scrollMins, setScrollMins] = useState(0);
-  const [dopamineLog, setDopamineLog] = useState(null);
-
-  // Task execution hours states
-  const [newTaskPlannedHours, setNewTaskPlannedHours] = useState('');
-  const [taskActualHours, setTaskActualHours] = useState({});
-  
-  // Add task inputs
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskCategory, setNewTaskCategory] = useState('custom');
-  const [newTaskIsMandatory, setNewTaskIsMandatory] = useState(false);
-  const [newTaskDueTime, setNewTaskDueTime] = useState('');
-
-  // Sleep logger inputs
-  const [sleepTime, setSleepTime] = useState('22:00');
-  const [wakeTime, setWakeTime] = useState('06:00');
-  const [sleepQuality, setSleepQuality] = useState(3);
-  const [sleepLatency, setSleepLatency] = useState(15);
-  const [restlessness, setRestlessness] = useState(1);
-  const [wakeEnergy, setWakeEnergy] = useState(3);
   
   const [loading, setLoading] = useState(true);
 
@@ -84,25 +180,8 @@ const Dashboard = () => {
       const sleepRes = await authFetch('/routine/sleep');
       if (sleepRes.ok) {
         const sleepData = await sleepRes.json();
-        // Find sleep log for selected date
         const todayLog = sleepData.find(log => log.date === selectedDate);
-        if (todayLog) {
-          setSleepLog(todayLog);
-          setSleepTime(todayLog.sleepTime);
-          setWakeTime(todayLog.wakeTime);
-          setSleepQuality(todayLog.quality);
-          setSleepLatency(todayLog.sleepLatency || 15);
-          setRestlessness(todayLog.restlessness || 1);
-          setWakeEnergy(todayLog.wakeEnergy || 3);
-        } else {
-          setSleepLog(null);
-          setSleepTime('22:00');
-          setWakeTime('06:00');
-          setSleepQuality(3);
-          setSleepLatency(15);
-          setRestlessness(1);
-          setWakeEnergy(3);
-        }
+        setSleepLog(todayLog || null);
       }
 
       // Fetch dopamine logs
@@ -110,20 +189,10 @@ const Dashboard = () => {
       if (dopRes.ok) {
         const dopLogs = await dopRes.json();
         const todayDop = dopLogs.find(l => l.date === selectedDate);
-        if (todayDop) {
-          setDopamineLog(todayDop);
-          setInstaMins(todayDop.instagramMins || 0);
-          setYtMins(todayDop.youtubeMins || 0);
-          setScrollMins(todayDop.scrollingMins || 0);
-        } else {
-          setDopamineLog(null);
-          setInstaMins(0);
-          setYtMins(0);
-          setScrollMins(0);
-        }
+        setDopamineLog(todayDop || null);
       }
 
-      // Fetch AI Suggestions (reload to calculate today's Life Score & operator briefing)
+      // Fetch AI Suggestions
       const aiRes = await authFetch('/ai/suggestions', { method: 'POST' });
       if (aiRes.ok) {
         const aiData = await aiRes.json();
@@ -135,7 +204,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   };
 
@@ -143,741 +214,358 @@ const Dashboard = () => {
     loadDashboardData();
   }, [selectedDate]);
 
-  // Task Completion Toggle
-  const handleToggleTask = async (taskId, actualHrs) => {
-    try {
-      const hrs = actualHrs !== undefined ? actualHrs : taskActualHours[taskId];
-      const res = await authFetch(`/routine/tasks/${taskId}/toggle`, {
-        method: 'PUT',
-        body: JSON.stringify({ 
-          date: selectedDate,
-          actualHours: hrs !== undefined && hrs !== '' ? Number(hrs) : undefined
-        })
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setTasks(prev => prev.map(t => t.id === taskId ? updated : t));
-      }
-    } catch (error) {
-      console.error('Error toggling task:', error);
-    }
-  };
-
-  // Add Task
-  const handleAddTask = async (e) => {
-    e.preventDefault();
-    if (!newTaskTitle.trim()) return;
-
-    try {
-      const res = await authFetch('/routine/tasks', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: newTaskTitle,
-          isMandatory: newTaskIsMandatory,
-          category: newTaskCategory,
-          dueTime: newTaskDueTime || undefined,
-          plannedHours: newTaskPlannedHours ? Number(newTaskPlannedHours) : undefined
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTasks(prev => [...prev, data]);
-        setNewTaskTitle('');
-        setNewTaskIsMandatory(false);
-        setNewTaskCategory('custom');
-        setNewTaskDueTime('');
-        setNewTaskPlannedHours('');
-      }
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  };
-
-  // Delete Task
-  const handleDeleteTask = async (taskId) => {
-    try {
-      const res = await authFetch(`/routine/tasks/${taskId}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-      }
-    } catch (error) {
-      console.error('Error deleting task:', error);
-    }
-  };
-
-  // Log Sleep
-  const handleLogSleep = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await authFetch('/routine/sleep', {
-        method: 'POST',
-        body: JSON.stringify({
-          date: selectedDate,
-          sleepTime,
-          wakeTime,
-          quality: Number(sleepQuality),
-          sleepLatency: Number(sleepLatency),
-          restlessness: Number(restlessness),
-          wakeEnergy: Number(wakeEnergy)
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSleepLog(data);
-      }
-    } catch (error) {
-      console.error('Error logging sleep:', error);
-    }
-  };
-
-  // Handle Break Task with AI
-  const handleBreakTask = async (title) => {
-    try {
-      const res = await authFetch('/ai/break-task', {
-        method: 'POST',
-        body: JSON.stringify({ title })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setActiveMicroTask({
-          originalTask: title,
-          microStep: data.microStep
-        });
-        setPanicCountdown(120); // 2 minute countdown urgency system
-      }
-    } catch (e) {
-      console.error('Failed breaking task:', e);
-    }
-  };
-
-  // Timer for micro task panic countdown
-  useEffect(() => {
-    let interval = null;
-    if (panicCountdown > 0) {
-      interval = setInterval(() => {
-        setPanicCountdown(c => c - 1);
-      }, 1000);
-    } else if (panicCountdown === 0 && activeMicroTask) {
-      // Countdown expired, auto reset
-      setActiveMicroTask(null);
-    }
-    return () => clearInterval(interval);
-  }, [panicCountdown, activeMicroTask]);
-
-  // Log Dopamine Metrics
-  const handleLogDopamine = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await authFetch('/routine/dopamine', {
-        method: 'POST',
-        body: JSON.stringify({
-          date: selectedDate,
-          instagramMins: Number(instaMins),
-          youtubeMins: Number(ytMins),
-          scrollingMins: Number(scrollMins)
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDopamineLog(data);
-      }
-    } catch (error) {
-      console.error('Error logging dopamine tracker:', error);
-    }
-  };
-
-  // Calculate percentages
   const activeTasks = tasks;
   const completedTasksToday = activeTasks.filter(t => t.completedDates?.includes(selectedDate));
   const completionPercentage = activeTasks.length > 0 
     ? Math.round((completedTasksToday.length / activeTasks.length) * 100) 
     : 0;
 
+  const notifications = user?.notifications || [];
+
   return (
-    <div className="page-container" style={{ overflowY: 'auto' }}>
+    <div className="page-container" style={{ overflowY: 'auto', paddingBottom: '30px' }}>
       
-      {/* Date Selector Header with Life Score & Burnout indicators */}
-      <div className="card flex justify-between align-center" style={{ padding: '12px 24px', flexShrink: 0 }}>
-        <div className="flex align-center gap-8">
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Selected Date:</span>
+      {/* Header Row: Greeting & Styled Date Selector */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, marginBottom: '20px' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, background: 'linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>
+            Aria Life OS Dashboard
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            Metrics for {formatDisplayDate(selectedDate)}
+          </p>
+        </div>
+        
+        {/* Premium Date Selector */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px', 
+          background: 'rgba(255, 255, 255, 0.02)', 
+          border: '1px solid var(--border-color)', 
+          borderRadius: '10px', 
+          padding: '6px 14px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+        }}>
+          <Calendar size={14} style={{ color: 'var(--color-primary)' }} />
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>Select Date:</span>
           <input 
             type="date" 
             value={selectedDate} 
             onChange={(e) => setSelectedDate(e.target.value)} 
             className="form-input" 
-            style={{ width: 'auto', padding: '4px 10px', fontSize: '13px' }}
+            style={{ width: 'auto', padding: '2px 6px', fontSize: '12px', border: 'none', background: 'transparent', cursor: 'pointer', outline: 'none' }}
           />
         </div>
-        <div className="flex align-center gap-16">
-          {lifeScore !== null && (
-            <div className="flex align-center gap-8" style={{ borderRight: '1px solid var(--border-color)', paddingRight: '16px' }}>
-              <Brain size={14} style={{ color: 'var(--color-primary)' }} />
-              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Life Score:</span>
-              <span className="task-badge" style={{
-                background: lifeScore >= 80 ? 'var(--color-success-glow)' : lifeScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
-                color: lifeScore >= 80 ? 'var(--color-success)' : lifeScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
-                fontWeight: 700,
-                border: lifeScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : lifeScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
-              }}>
-                {lifeScore} / 100
-              </span>
-            </div>
-          )}
-          {burnoutProb !== null && (
-            <div className="flex align-center gap-8" style={{ borderRight: '1px solid var(--border-color)', paddingRight: '16px' }}>
-              <AlertCircle size={14} style={{ color: burnoutProb > 60 ? 'var(--color-danger)' : 'var(--color-warning)' }} />
-              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Burnout Risk:</span>
-              <span className="task-badge" style={{
-                background: burnoutProb > 60 ? 'var(--color-danger-glow)' : 'var(--color-warning-glow)',
-                color: burnoutProb > 60 ? 'var(--color-danger)' : 'var(--color-warning)',
-                fontWeight: 700,
-                border: burnoutProb > 60 ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
-              }}>
-                {burnoutProb}%
-              </span>
-            </div>
-          )}
-          <div className="flex align-center gap-8">
-            <Award size={16} style={{ color: 'var(--color-primary)' }} />
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>
-              {completionPercentage}% Tasks Completed Today
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* AI Life Operator Workload Adjustment Briefing Card */}
-      {lifeOperatorSuggestion && (
-        <div className="card" style={{ flexShrink: 0, padding: '16px 24px', background: 'rgba(99, 102, 241, 0.04)', border: '1px dashed rgba(99, 102, 241, 0.3)' }}>
-          <div className="flex align-center gap-8" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            <Brain size={12} /> AI Life OS Scheduler
-          </div>
-          <p style={{ fontSize: '13px', color: 'var(--text-primary)', marginTop: '6px', lineHeight: '1.4' }}>
-            {lifeOperatorSuggestion}
-          </p>
-        </div>
-      )}
-
-      {/* Ultimate Goal Header Widget */}
-      {user?.ultimateGoal?.title && (
-        <div className="card" style={{ flexShrink: 0, padding: '16px 24px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(18, 20, 29, 0.6) 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-          <div className="flex justify-between align-center">
-            <div>
-              <span className="flex align-center gap-8" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                <Target size={12} /> Ultimate Goal
-              </span>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, marginTop: '4px', marginBottom: '2px' }}>{user.ultimateGoal.title}</h3>
-              {user.ultimateGoal.description && (
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{user.ultimateGoal.description}</p>
-              )}
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              {(() => {
-                const days = getDaysRemaining(user.ultimateGoal.targetDate);
-                if (days === null) return null;
-                if (days < 0) {
-                  return <span className="task-badge task-badge-custom" style={{ padding: '4px 8px', fontSize: '11px' }}>Goal Date Reached</span>;
-                }
-                if (days === 0) {
-                  return <span className="task-badge" style={{ background: 'var(--color-warning-glow)', color: 'var(--color-warning)', padding: '4px 8px', fontSize: '11px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>Today is the Target Date!</span>;
-                }
-                return (
-                  <div>
-                    <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-primary)' }}>{days}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '4px' }}>days remaining</span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid-dash">
-        
-        {/* Left Side: Tasks */}
-        <div className="inner-column">
+      {loading ? (
+        <DashboardSkeleton />
+      ) : (
+        <div className="grid-dash">
           
-          {/* Daily Progress Widget */}
-          <div className="card stat-widget" style={{ flexShrink: 0, padding: '16px' }}>
-            <span className="card-title" style={{ fontSize: '13px', marginBottom: '8px' }}>Daily Execution</span>
-            <div className="flex align-center gap-16">
-              <div className="stat-value" style={{ fontSize: '26px' }}>{completedTasksToday.length}/{activeTasks.length}</div>
-              <div className="water-progress-bar" style={{ margin: 0 }}>
-                <div 
-                  className="water-progress-fill" 
-                  style={{ 
-                    width: `${completionPercentage}%`, 
-                    backgroundColor: 'var(--color-success)' 
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Task Manager Card */}
-          <div className="card" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            <div className="card-title" style={{ fontSize: '13px', marginBottom: '12px', display: 'flex', width: '100%', alignItems: 'center' }}>
-              <span>Tasks & Habits</span>
-              <div className="flex align-center gap-12" style={{ marginLeft: 'auto' }}>
-                <label className="flex align-center gap-8" style={{ fontSize: '12px', cursor: 'pointer', color: crisisRecovery ? 'var(--color-warning)' : 'var(--text-secondary)' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={crisisRecovery} 
-                    onChange={(e) => setCrisisRecovery(e.target.checked)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <span>Crisis Recovery Mode</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Anti-Procrastination Engine Countdown Urgency Widget */}
-            {activeMicroTask && (
-              <div className="card" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: '12px', padding: '12px' }}>
-                <div className="flex justify-between align-center" style={{ marginBottom: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-danger)', textTransform: 'uppercase' }}>
-                    Urgent Micro-Action (Bypass Procrastination)
-                  </span>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-danger)' }}>
-                    {Math.floor(panicCountdown / 60)}:{String(panicCountdown % 60).padStart(2, '0')}
-                  </span>
-                </div>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {activeMicroTask.microStep}
-                </p>
-                <div className="flex gap-8" style={{ marginTop: '8px' }}>
-                  <button 
-                    className="btn btn-primary" 
-                    style={{ padding: '3px 8px', fontSize: '11px', background: 'var(--color-danger)', border: 'none' }}
-                    onClick={() => {
-                      const matchingTask = tasks.find(t => t.title === activeMicroTask.originalTask);
-                      if (matchingTask) {
-                        handleToggleTask(matchingTask.id);
-                      }
-                      setActiveMicroTask(null);
-                      setPanicCountdown(0);
-                    }}
-                  >
-                    Completed!
-                  </button>
-                  <button 
-                    className="btn btn-secondary" 
-                    style={{ padding: '3px 8px', fontSize: '11px' }}
-                    onClick={() => {
-                      setActiveMicroTask(null);
-                      setPanicCountdown(0);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
+          {/* Left Column: Visual Metrics & AI Operator Suggestions */}
+          <div className="inner-column" style={{ gap: '20px' }}>
             
-            <div className="task-section" style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              {crisisRecovery ? (
-                <div className="task-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
-                  <div className={`task-item ${crisisCompleted.water ? 'completed' : ''}`}>
-                    <div className="task-item-left">
-                      <label className="task-checkbox-wrapper">
-                        <input 
-                          type="checkbox" 
-                          checked={crisisCompleted.water} 
-                          onChange={() => setCrisisCompleted(prev => ({ ...prev, water: !prev.water }))}
-                          className="task-checkbox"
-                        />
-                      </label>
-                      <span className="task-text">Hydrate: Drink 1 glass of clean water</span>
-                      <span className="task-badge task-badge-mandatory">Recovery 1</span>
-                    </div>
-                  </div>
-                  <div className={`task-item ${crisisCompleted.study ? 'completed' : ''}`}>
-                    <div className="task-item-left">
-                      <label className="task-checkbox-wrapper">
-                        <input 
-                          type="checkbox" 
-                          checked={crisisCompleted.study} 
-                          onChange={() => setCrisisCompleted(prev => ({ ...prev, study: !prev.study }))}
-                          className="task-checkbox"
-                        />
-                      </label>
-                      <span className="task-text">Low-Activation Study: Sit at desk and study/work for exactly 5 minutes</span>
-                      <span className="task-badge task-badge-mandatory">Recovery 2</span>
-                    </div>
-                  </div>
-                  <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '12px', fontStyle: 'italic', lineHeight: '1.4' }}>
-                    Crisis Recovery Mode active. Routine tasks are hidden. Focus on hydrating and the 5-minute study buffer to restore cognitive stamina.
-                  </p>
-                </div>
-              ) : activeTasks.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
-                  No tasks tracked yet. Add your first routine below.
-                </p>
-              ) : (
-                <div className="task-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
-                  {activeTasks.map(task => {
-                    const isCompleted = task.completedDates?.includes(selectedDate);
-                    return (
-                      <div key={task.id} className={`task-item ${isCompleted ? 'completed' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px' }}>
-                        <div className="task-item-left" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                            <label className="task-checkbox-wrapper">
-                              <input 
-                                type="checkbox" 
-                                checked={isCompleted} 
-                                onChange={() => handleToggleTask(task.id)}
-                                className="task-checkbox"
-                              />
-                            </label>
-                            <span className="task-text" style={{ fontSize: '13px', fontWeight: 500 }}>{task.title}</span>
-                          </div>
-                          
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {task.dueTime && (
-                              <span className="flex align-center gap-4" style={{ fontSize: '10px', color: 'var(--color-warning)', background: 'var(--color-warning-glow)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                                <Clock size={10} /> {task.dueTime}
-                              </span>
-                            )}
-                            <span className={`task-badge ${task.isMandatory ? 'task-badge-mandatory' : 'task-badge-custom'}`} style={{ fontSize: '10px' }}>
-                              {task.isMandatory ? 'Mandatory' : 'Custom'}
-                            </span>
-                            <button onClick={() => handleDeleteTask(task.id)} className="btn-icon" title="Remove Habit" style={{ padding: '4px' }}>
-                              <Trash2 size={12} style={{ color: 'var(--color-danger)' }} />
-                            </button>
-                          </div>
-                        </div>
+            {/* Visual Metrics Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              
+              {/* Overall Life Score Card */}
+              <div className="card" style={{ 
+                alignItems: 'center', 
+                textAlign: 'center', 
+                padding: '24px 20px', 
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(18, 20, 29, 0.6) 100%)',
+                border: '1px solid rgba(99, 102, 241, 0.15)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Decorative glow */}
+                <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.12)', filter: 'blur(20px)' }} />
+                
+                <span className="form-label" style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '14px', letterSpacing: '0.8px' }}>Productivity Baseline</span>
+                <CircularProgress 
+                  value={lifeScore} 
+                  size={88} 
+                  strokeWidth={7} 
+                  color="var(--color-primary)" 
+                  glow={true} 
+                />
+                <h3 style={{ fontSize: '15px', fontWeight: 700, marginTop: '16px', color: 'var(--text-primary)' }}>Life Score Index</h3>
+                <span className="task-badge" style={{
+                  marginTop: '8px',
+                  background: lifeScore >= 80 ? 'var(--color-success-glow)' : lifeScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
+                  color: lifeScore >= 80 ? 'var(--color-success)' : lifeScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
+                  border: lifeScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : lifeScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  {lifeScore >= 80 ? 'Peak Stamina' : lifeScore >= 50 ? 'Stable Load' : 'Critical Fatigue'}
+                </span>
+              </div>
 
-                        {/* Planned vs Actual hours logging block (Reality-Based Scheduling) */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '6px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {task.plannedHours !== null && (
-                              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                                Planned: <strong>{task.plannedHours}h</strong>
-                              </span>
-                            )}
-                            {isCompleted && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Actual:</span>
-                                <input 
-                                  type="number"
-                                  step="0.1"
-                                  min="0"
-                                  style={{ width: '45px', padding: '1px 4px', fontSize: '11px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '3px' }}
-                                  value={taskActualHours[task.id] !== undefined ? taskActualHours[task.id] : (task.actualHoursLogs?.[selectedDate] || '')}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setTaskActualHours(prev => ({ ...prev, [task.id]: val }));
-                                  }}
-                                  onBlur={() => handleToggleTask(task.id, taskActualHours[task.id])}
-                                  placeholder="hrs"
-                                />
-                              </div>
-                            )}
-                          </div>
-                          
-                          {!isCompleted && (
-                            <button 
-                              onClick={() => handleBreakTask(task.title)}
-                              style={{ 
-                                background: 'transparent', 
-                                border: 'none', 
-                                color: 'var(--color-primary)', 
-                                fontSize: '11px', 
-                                cursor: 'pointer',
-                                textDecoration: 'underline',
-                                padding: '2px 4px'
-                              }}
-                            >
-                              Break Down with AI
-                            </button>
-                          )}
-                        </div>
+              {/* Task Compliance Card */}
+              <div className="card" style={{ 
+                alignItems: 'center', 
+                textAlign: 'center', 
+                padding: '24px 20px',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(18, 20, 29, 0.6) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.12)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.10)', filter: 'blur(20px)' }} />
+
+                <span className="form-label" style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '14px', letterSpacing: '0.8px' }}>Execution Consistency</span>
+                <CircularProgress 
+                  value={completionPercentage} 
+                  size={88} 
+                  strokeWidth={7} 
+                  color="var(--color-success)" 
+                  glow={true}
+                />
+                <h3 style={{ fontSize: '15px', fontWeight: 700, marginTop: '16px', color: 'var(--text-primary)' }}>Task Compliance</h3>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                  {completedTasksToday.length} of {activeTasks.length} habits resolved
+                </p>
+              </div>
+
+              {/* Burnout Risk Card */}
+              <div className="card" style={{ 
+                alignItems: 'center', 
+                textAlign: 'center', 
+                padding: '24px 20px',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, rgba(18, 20, 29, 0.6) 100%)',
+                border: '1px solid rgba(245, 158, 11, 0.12)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.10)', filter: 'blur(20px)' }} />
+
+                <span className="form-label" style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '14px', letterSpacing: '0.8px' }}>Neurological Reserves</span>
+                <CircularProgress 
+                  value={burnoutProb} 
+                  size={88} 
+                  strokeWidth={7} 
+                  color={burnoutProb > 65 ? 'var(--color-danger)' : 'var(--color-warning)'} 
+                  glow={true}
+                />
+                <h3 style={{ fontSize: '15px', fontWeight: 700, marginTop: '16px', color: 'var(--text-primary)' }}>Burnout Threat</h3>
+                <span className="task-badge" style={{
+                  marginTop: '8px',
+                  background: burnoutProb > 65 ? 'var(--color-danger-glow)' : 'var(--color-warning-glow)',
+                  color: burnoutProb > 65 ? 'var(--color-danger)' : 'var(--color-warning)',
+                  border: burnoutProb > 65 ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
+                }}>
+                  {burnoutProb > 65 ? 'Critical Risk' : 'Buffer Intact'}
+                </span>
+              </div>
+
+            </div>
+
+            {/* AI Life OS Intelligence Hub Card */}
+            <div className="card" style={{ padding: '24px', background: 'rgba(18, 20, 29, 0.45)', border: '1px solid var(--border-color)', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                <span className="flex align-center gap-8" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  <Brain size={15} /> AI Life OS Scheduler & Diagnostics
+                </span>
+                <Sparkles size={14} style={{ color: 'var(--color-warning)' }} />
+              </div>
+
+              {lifeOperatorSuggestion ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  
+                  {/* AI Suggestion Box */}
+                  <div style={{ 
+                    padding: '16px 20px', 
+                    borderRadius: '10px', 
+                    background: 'rgba(99, 102, 241, 0.03)', 
+                    borderLeft: '4px solid var(--color-primary)',
+                    boxShadow: 'inset 0 0 12px rgba(99, 102, 241, 0.02)'
+                  }}>
+                    <h4 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                      Scheduler Operator Brief
+                    </h4>
+                    <p style={{ fontSize: '13px', lineHeight: 1.5, color: 'var(--text-primary)', fontWeight: 500 }}>
+                      {lifeOperatorSuggestion}
+                    </p>
+                  </div>
+
+                  {/* Bullet points baseline summary */}
+                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '18px' }}>
+                    <h4 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                      Diagnostic Baseline Logs
+                    </h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      
+                      <div className="flex align-center gap-12" style={{ fontSize: '12px' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--color-success)' }} />
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          Daily checklist compliance is currently at <strong style={{ color: 'var(--text-primary)' }}>{completionPercentage}%</strong>.
+                        </span>
                       </div>
-                    );
-                  })}
+
+                      {sleepLog ? (
+                        <div className="flex align-center gap-12" style={{ fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: sleepLog.duration >= 7 ? 'var(--color-primary)' : 'var(--color-warning)' }} />
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            Registered sleep duration is <strong style={{ color: 'var(--text-primary)' }}>{sleepLog.duration} hours</strong> with quality index <strong style={{ color: 'var(--text-primary)' }}>{sleepLog.quality}/5</strong>.
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex align-center gap-12" style={{ fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--text-muted)' }} />
+                          <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            Circadian sleep log data missing. Update records in the Planner.
+                          </span>
+                        </div>
+                      )}
+
+                      {dopamineLog ? (
+                        <div className="flex align-center gap-12" style={{ fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: dopamineLog.dopamineScore >= 80 ? 'var(--color-success)' : 'var(--color-danger)' }} />
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            Distraction screen time totals <strong style={{ color: 'var(--text-primary)' }}>{dopamineLog.totalMinutes} minutes</strong> (Focus Index: <strong style={{ color: 'var(--text-primary)' }}>{dopamineLog.dopamineScore}/100</strong>).
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex align-center gap-12" style={{ fontSize: '12px' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--text-muted)' }} />
+                          <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            Digital distraction logs missing. Update records in the Planner.
+                          </span>
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+
+                </div>
+              ) : (
+                <div style={{ display: 'flex', height: '140px', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <Activity size={18} style={{ color: 'var(--text-muted)' }} />
+                    <p>No telemetry logged. Complete logs under Tasks page to activate AI OS diagnostic briefing.</p>
+                  </div>
                 </div>
               )}
-
-              {/* Add Task Form with Planned Hours input */}
-              <form onSubmit={handleAddTask} style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="New habit or task title..."
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                    required
-                  />
-                </div>
-                
-                {/* 2-column grid for inputs to keep layout clean and wide */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Category</label>
-                    <select
-                      className="form-input"
-                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                      value={newTaskCategory}
-                      onChange={(e) => setNewTaskCategory(e.target.value)}
-                    >
-                      <option value="custom">Custom</option>
-                      <option value="workout">Workout</option>
-                      <option value="study">Study</option>
-                      <option value="practice">Practice</option>
-                    </select>
-                  </div>
-                  
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Due Time</label>
-                    <input
-                      type="time"
-                      className="form-input"
-                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                      value={newTaskDueTime}
-                      onChange={(e) => setNewTaskDueTime(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '11px', marginBottom: '6px', textTransform: 'none' }}>Planned Hours</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.1"
-                      className="form-input"
-                      placeholder="e.g. 1.5"
-                      style={{ padding: '8px 12px', fontSize: '13px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                      value={newTaskPlannedHours}
-                      onChange={(e) => setNewTaskPlannedHours(e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <label className="flex align-center gap-8" style={{ fontSize: '13px', cursor: 'pointer', userSelect: 'none' }}>
-                      <input
-                        type="checkbox"
-                        checked={newTaskIsMandatory}
-                        onChange={(e) => setNewTaskIsMandatory(e.target.checked)}
-                        style={{ cursor: 'pointer', width: '16px', height: '16px' }}
-                      />
-                      <span>Mandatory Routine</span>
-                    </label>
-                    <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px' }}>
-                      <Plus size={14} /> Add Task
-                    </button>
-                  </div>
-                </div>
-              </form>
-
             </div>
+
           </div>
 
-        </div>
-
-        {/* Right Side: Sleep Logging & Dopamine Logging */}
-        <div className="inner-column" style={{ gap: '24px' }}>
-          
-          <div className="card">
-            <div className="card-title">
-              <span>Sleep & Wake Log</span>
-              {sleepLog && <Sun size={16} style={{ color: 'var(--color-warning)' }} />}
-            </div>
-
-            <form onSubmit={handleLogSleep} className="task-section">
-              
-              <div className="sleep-inputs">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Sleep Time</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={sleepTime}
-                    onChange={(e) => setSleepTime(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Wake Time</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={wakeTime}
-                    onChange={(e) => setWakeTime(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Latency (mins)</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-input"
-                  value={sleepLatency}
-                  onChange={(e) => setSleepLatency(Number(e.target.value))}
-                  required
-                />
-              </div>
-
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Restlessness</label>
-                <select
-                  className="form-input"
-                  value={restlessness}
-                  onChange={(e) => setRestlessness(Number(e.target.value))}
-                  required
-                >
-                  <option value={1}>1 - Calm / Peaceful</option>
-                  <option value={2}>2 - Light tossing</option>
-                  <option value={3}>3 - Tossed & turned</option>
-                  <option value={4}>4 - Frequent waking</option>
-                  <option value={5}>5 - Very restless</option>
-                </select>
-              </div>
-
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Wake-Up Energy (1 - 5)</label>
-                <div className="sleep-quality-selector">
-                  {[1, 2, 3, 4, 5].map(q => (
-                    <button
-                      key={q}
-                      type="button"
-                      className={`quality-btn ${wakeEnergy === q ? 'active' : ''}`}
-                      onClick={() => setWakeEnergy(q)}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Sleep Quality (1 - 5)</label>
-                <div className="sleep-quality-selector">
-                  {[1, 2, 3, 4, 5].map(q => (
-                    <button
-                      key={q}
-                      type="button"
-                      className={`quality-btn ${sleepQuality === q ? 'active' : ''}`}
-                      onClick={() => setSleepQuality(q)}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button type="submit" className="btn btn-secondary w-full">
-                <Moon size={14} /> Log Sleep Session
-              </button>
-
-            </form>
-
-            {sleepLog && (
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', fontSize: '13px' }}>
-                <div className="flex justify-between" style={{ marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Calculated Duration:</span>
-                  <span style={{ fontWeight: 600 }}>{sleepLog.duration} Hours</span>
-                </div>
-                <div className="flex justify-between" style={{ marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Quality Rating:</span>
-                  <span style={{ fontWeight: 600 }}>{sleepLog.quality} / 5</span>
-                </div>
-                {sleepLog.sleepScore !== undefined && (
-                  <div className="flex justify-between align-center">
-                    <span style={{ color: 'var(--text-secondary)' }}>Sleep Score:</span>
-                    <span className="task-badge" style={{
-                      background: sleepLog.sleepScore >= 80 ? 'var(--color-success-glow)' : sleepLog.sleepScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
-                      color: sleepLog.sleepScore >= 80 ? 'var(--color-success)' : sleepLog.sleepScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
-                      fontWeight: 700,
-                      border: sleepLog.sleepScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : sleepLog.sleepScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
-                    }}>
-                      {sleepLog.sleepScore} / 100
-                    </span>
-                  </div>
+          {/* Right Column: Social Alerts, Notifications & Ultimate Goal countdown */}
+          <div className="inner-column" style={{ gap: '20px' }}>
+            
+            {/* Social Alerts Card */}
+            <div className="card" style={{ flex: 1, minHeight: '320px', display: 'flex', flexDirection: 'column', padding: '24px', background: 'rgba(18, 20, 29, 0.45)', border: '1px solid var(--border-color)' }}>
+              <div className="card-title" style={{ fontSize: '12px', marginBottom: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                <span className="flex align-center gap-8" style={{ fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.8px' }}>
+                  <Bell size={14} style={{ color: 'var(--color-primary)' }} /> ALERTS & NOTIFICATIONS
+                </span>
+                {notifications.length > 0 && (
+                  <button 
+                    onClick={clearNotifications} 
+                    style={{ background: 'transparent', border: 'none', color: 'var(--color-danger)', fontSize: '11px', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', outline: 'none' }}
+                  >
+                    Clear All
+                  </button>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Dopamine Distraction Tracker */}
-          <div className="card">
-            <div className="card-title">
-              <span>Dopamine Tracker</span>
-              <Brain size={16} style={{ color: 'var(--color-primary)' }} />
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
+                {notifications.length === 0 ? (
+                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <CheckCircle2 size={20} style={{ color: 'rgba(255, 255, 255, 0.15)' }} />
+                      <span>Social log clear.<br />No nudges or requests recorded today.</span>
+                    </div>
+                  </div>
+                ) : (
+                  notifications.map(n => (
+                    <div key={n.id} style={{ 
+                      padding: '12px 14px', 
+                      borderRadius: '8px', 
+                      background: 'rgba(255, 255, 255, 0.01)', 
+                      border: '1px solid var(--border-color)', 
+                      fontSize: '12px', 
+                      lineHeight: 1.4,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      transition: 'border-color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    >
+                      <Zap size={12} style={{ color: 'var(--color-primary)', marginTop: '2px', flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <span style={{ color: 'var(--text-primary)' }}>
+                          <strong style={{ fontWeight: 700 }}>{n.senderName}</strong> {n.message}
+                        </span>
+                        <span style={{ display: 'block', fontSize: '9px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                          {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            
-            <form onSubmit={handleLogDopamine} className="task-section">
-              <div className="sleep-inputs">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Instagram (mins)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input"
-                    value={instaMins}
-                    onChange={(e) => setInstaMins(Number(e.target.value))}
-                    required
-                  />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">YouTube (mins)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input"
-                    value={ytMins}
-                    onChange={(e) => setYtMins(Number(e.target.value))}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Other Scrolling / Feed (mins)</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-input"
-                  value={scrollMins}
-                  onChange={(e) => setScrollMins(Number(e.target.value))}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-secondary w-full">
-                <Brain size={14} /> Log Screen Time
-              </button>
-            </form>
 
-            {dopamineLog && (
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', fontSize: '13px' }}>
-                <div className="flex justify-between" style={{ marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Total Screen Time:</span>
-                  <span style={{ fontWeight: 600 }}>{dopamineLog.totalMinutes} Mins</span>
-                </div>
-                <div className="flex justify-between align-center">
-                  <span style={{ color: 'var(--text-secondary)' }}>Focus Score:</span>
-                  <span className="task-badge" style={{
-                    background: dopamineLog.dopamineScore >= 80 ? 'var(--color-success-glow)' : dopamineLog.dopamineScore >= 50 ? 'var(--color-warning-glow)' : 'var(--color-danger-glow)',
-                    color: dopamineLog.dopamineScore >= 80 ? 'var(--color-success)' : dopamineLog.dopamineScore >= 50 ? 'var(--color-warning)' : 'var(--color-danger)',
-                    fontWeight: 700,
-                    border: dopamineLog.dopamineScore >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : dopamineLog.dopamineScore >= 50 ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
-                  }}>
-                    {dopamineLog.dopamineScore} / 100
-                  </span>
-                </div>
+            {/* Target Countdown Widget */}
+            {user?.ultimateGoal?.title && (
+              <div className="card" style={{ 
+                padding: '24px 20px', 
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(18, 20, 29, 0.7) 100%)', 
+                border: '1px solid rgba(99, 102, 241, 0.25)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', bottom: '-40px', left: '-40px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.05)', filter: 'blur(30px)' }} />
+
+                <span className="flex align-center gap-6" style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  <Target size={12} /> Ultimate Goal Target
+                </span>
+                
+                <h3 style={{ fontSize: '16px', fontWeight: 800, marginTop: '8px', marginBottom: '4px', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+                  {user.ultimateGoal.title}
+                </h3>
+                {user.ultimateGoal.description && (
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                    {user.ultimateGoal.description}
+                  </p>
+                )}
+
+                {(() => {
+                  const days = getDaysRemaining(user.ultimateGoal.targetDate);
+                  if (days === null) return null;
+                  if (days < 0) {
+                    return (
+                      <span className="task-badge task-badge-custom" style={{ display: 'inline-block', fontSize: '10px', marginTop: '14px', border: '1px solid var(--border-color)' }}>
+                        Target Milestone Reached
+                      </span>
+                    );
+                  }
+                  if (days === 0) {
+                    return (
+                      <span className="task-badge" style={{ marginTop: '14px', background: 'var(--color-warning-glow)', color: 'var(--color-warning)', fontSize: '10px', border: '1px solid rgba(245, 158, 11, 0.2)', display: 'inline-block' }}>
+                        Target Deadline Reached Today!
+                      </span>
+                    );
+                  }
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'baseline', marginTop: '12px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: 900, color: 'var(--color-primary)', letterSpacing: '-1px' }}>{days}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginLeft: '6px', fontWeight: 500 }}>days remaining</span>
+                    </div>
+                  );
+                })()}
               </div>
             )}
+
           </div>
 
         </div>
-
-      </div>
+      )}
 
     </div>
   );

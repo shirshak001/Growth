@@ -1040,8 +1040,290 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .low-dopamine-mode .stat-widget,
 .low-dopamine-mode .habit-grid,
 .low-dopamine-mode .sleep-quality-selector,
+.low-dopamine-mode .low-dopamine-mode .video-card,
+.low-dopamine-mode .ai-coach-premium,
+.low-dopamine-mode .stat-widget,
+.low-dopamine-mode .habit-grid,
+.low-dopamine-mode .sleep-quality-selector,
 .low-dopamine-mode .water-tracker-container,
 .low-dopamine-mode .ai-suggestions-list,
 .low-dopamine-mode .ai-coach-text {
   display: none !important; /* Block all dopamine/distraction triggers */
+}
+
+/* Custom Shadcn-like CSS UI Enhancements */
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.45); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Skeleton Screens (Wireframe loaders) */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 80%;
+  margin-bottom: 8px;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 50%;
+  margin-bottom: 16px;
+}
+
+.skeleton-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  background: rgba(18, 20, 29, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Glassmorphism details */
+.glass-card {
+  background: rgba(18, 20, 29, 0.4) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Page transitions */
+.animate-slideup {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fadein {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+.animate-scalein {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toggle Switch Style (Shadcn-like) */
+.switch-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-track {
+  width: 38px;
+  height: 20px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  position: relative;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
+}
+
+.switch-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.switch-input {
+  display: none;
+}
+
+.switch-input:checked + .switch-track {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary-hover);
+}
+
+.switch-input:checked + .switch-track .switch-thumb {
+  transform: translateX(18px);
+}
+
+.switch-track.active-warning:has(.switch-input:checked) {
+  background-color: var(--color-warning) !important;
+  border-color: var(--color-warning) !important;
+}
+
+/* Custom Checkbox (Shadcn-like) */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.checkbox-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--text-muted);
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-input:checked + .checkbox-box {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+.checkbox-input:checked + .checkbox-box::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-0.5px, -1px);
+  animation: drawCheck 0.15s ease-out forwards;
+}
+
+@keyframes drawCheck {
+  from {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.5) translate(-0.5px, -1px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(45deg) scale(1) translate(-0.5px, -1px);
+  }
+}
+
+/* Chip Tabs / Selection Buttons (Shadcn UI tablist alternative) */
+.chip-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.chip-item {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.chip-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.chip-item.active {
+  background: var(--color-primary-glow);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+/* Premium Inputs focus glow */
+.form-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.form-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15), 0 0 10px rgba(99, 102, 241, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Task Item Redesign styling */
+.task-item-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.task-item-modern:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.task-item-modern.completed {
+  border-color: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.01);
+}
+
+.task-item-modern.completed .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }

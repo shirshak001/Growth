@@ -30,7 +30,6 @@ const AICompanion = () => {
     setInputText('');
     setTyping(true);
 
-    const apiKey = user?.geminiApiKey || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0';
     try {
       let contextStr = '';
       const contextRes = await authFetch('/ai/suggestions', { method: 'POST' });
@@ -39,31 +38,18 @@ const AICompanion = () => {
         contextStr = `Current stats - Life Score: ${cData.lifeScore}/100, Burnout: ${cData.burnoutProb}%, Workload recommendation: "${cData.lifeOperatorSuggestion}".`;
       }
 
-      const prompt = `You are Aria, a premium supportive AI Companion inside the Growth tracking application. 
-Your goal is to help the student build discipline, consistency, and exam readiness.
-Current User Context: ${contextStr || 'No logs loaded yet.'}
-
-Instructions:
-1. Provide clinical, supportive, and elite motivational responses.
-2. Keep it brief (under 80 words).
-3. Do NOT use emojis.
-4. Do NOT say you are an AI assistant; you are Aria, their growth companion.
-
-User message: "${userMsg}"`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        }
-      );
+      const response = await authFetch('/ai/companion', {
+        method: 'POST',
+        body: JSON.stringify({
+          message: userMsg,
+          context: contextStr
+        })
+      });
 
       if (response.ok) {
         const result = await response.json();
-        const replyText = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'I am processing your daily routine insights. Let us stay focused.';
-        setMessages(prev => [...prev, { sender: 'companion', text: replyText.trim() }]);
+        const replyText = result.replyText || 'I am processing your daily routine insights. Let us stay focused.';
+        setMessages(prev => [...prev, { sender: 'companion', text: replyText }]);
       } else {
         setMessages(prev => [...prev, { sender: 'companion', text: 'I am here. Let us stay aligned with our study strategizer roadmap.' }]);
       }

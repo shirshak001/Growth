@@ -8,7 +8,9 @@ import {
   TrendingUp, 
   Trophy,
   Settings, 
-  LogOut 
+  LogOut,
+  CheckSquare,
+  Landmark
 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
@@ -16,10 +18,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'tasks', label: 'Tasks & Logging', icon: CheckSquare },
     { id: 'fitness', label: 'Fitness & Health', icon: Dumbbell },
     { id: 'mindset', label: 'Self-Development', icon: Brain },
     { id: 'strategist', label: 'Study Strategist', icon: BookOpen },
     { id: 'competitive', label: 'Competitive Arena', icon: Trophy },
+    { id: 'finance', label: 'Finance Planner', icon: Landmark },
     { id: 'analytics', label: 'Analytics & Growth', icon: TrendingUp },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

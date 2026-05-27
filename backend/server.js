@@ -14,6 +14,7 @@ import fitnessRoutes from './routes/fitness.js';
 import moodRoutes from './routes/mood.js';
 import aiRoutes from './routes/ai.js';
 import periodRoutes from './routes/period.js';
+import financeRoutes from './routes/finance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ app.use('/api/fitness', fitnessRoutes);
 app.use('/api/mood', moodRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/period', periodRoutes);
+app.use('/api/finance', financeRoutes);
 
 // Serve static assets in production (any environment other than development)
 if (process.env.NODE_ENV !== 'development') {

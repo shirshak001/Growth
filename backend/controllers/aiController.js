@@ -203,6 +203,7 @@ export const getAISuggestions = async (req, res) => {
   const fitnessLogs = db.find('fitnessLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
   const moodLogs = db.find('moodLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
   const dopamineLogs = db.find('dopamineLogs', log => log.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
+  const transactions = db.find('transactions', t => t.userId === userId).sort((a, b) => b.date.localeCompare(a.date));
 
   const profile = {
     height: user.height,
@@ -213,6 +214,39 @@ export const getAISuggestions = async (req, res) => {
   
   // Get local base recommendations
   const localSuggestions = generateLocalSuggestions(payload);
+
+  // Financial Stats & Suggestions
+  let totalIncome = 0;
+  let totalExpenses = 0;
+  transactions.forEach(t => {
+    if (t.type === 'income') totalIncome += Number(t.amount);
+    else if (t.type === 'expense') totalExpenses += Number(t.amount);
+  });
+  const netSavings = totalIncome - totalExpenses;
+  const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
+
+  if (totalExpenses > totalIncome && totalIncome > 0) {
+    localSuggestions.push({
+      category: 'finance',
+      title: 'Expense Exceeds Income',
+      description: `Your expenses (₹${totalExpenses}) exceed your income (₹${totalIncome}). Audit your recent transactions to cut non-essential costs.`,
+      priority: 'high'
+    });
+  } else if (totalIncome > 0 && savingsRate < 20) {
+    localSuggestions.push({
+      category: 'finance',
+      title: 'Increase Savings Rate',
+      description: `Your savings rate is ${savingsRate}%. Aim to save at least 20% of your total income by optimizing discretionary spending.`,
+      priority: 'medium'
+    });
+  } else if (transactions.length === 0) {
+    localSuggestions.push({
+      category: 'finance',
+      title: 'Begin Financial Tracking',
+      description: 'Start logging your daily income and expenses. Keeping a close tab on your finances builds long-term life discipline.',
+      priority: 'medium'
+    });
+  }
 
   // Fallback to process.env.GEMINI_API_KEY if user has not specified one
   const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
@@ -226,33 +260,54 @@ export const getAISuggestions = async (req, res) => {
   const todayDopamineLog = dopamineLogs.find(l => l.date === todayStr);
 
   // 1. Calculate Life Score
-  const sleepComponent = todaySleepLog ? (todaySleepLog.sleepScore || todaySleepLog.quality * 20) : 70;
-  
-  const completedToday = tasks.filter(t => t.completedDates?.includes(todayStr)).length;
-  const taskComponent = tasks.length > 0 ? (completedToday / tasks.length) * 100 : 80;
-  
-  const waterComponent = todayFitnessLog ? Math.min(100, ((todayFitnessLog.waterIntake || 0) / 2000) * 100) : 50;
-  
-  const dopamineComponent = todayDopamineLog ? (todayDopamineLog.dopamineScore || 100) : 100;
-  
-  const moodComponent = todayMoodLog ? (todayMoodLog.mood * 20) : 60;
+  let totalWeight = 0;
+  let weightedScoreSum = 0;
 
-  const lifeScore = Math.round(
-    (sleepComponent * 0.20) +
-    (taskComponent * 0.35) +
-    (waterComponent * 0.15) +
-    (dopamineComponent * 0.20) +
-    (moodComponent * 0.10)
-  );
+  if (todaySleepLog) {
+    const sleepScore = todaySleepLog.sleepScore !== undefined ? todaySleepLog.sleepScore : todaySleepLog.quality * 20;
+    weightedScoreSum += sleepScore * 0.20;
+    totalWeight += 0.20;
+  }
+
+  if (tasks.length > 0) {
+    const completedToday = tasks.filter(t => t.completedDates?.includes(todayStr)).length;
+    const taskScore = (completedToday / tasks.length) * 100;
+    weightedScoreSum += taskScore * 0.35;
+    totalWeight += 0.35;
+  }
+
+  if (todayFitnessLog && todayFitnessLog.waterIntake !== undefined && todayFitnessLog.waterIntake !== null) {
+    const waterScore = Math.min(100, (todayFitnessLog.waterIntake / 2000) * 100);
+    weightedScoreSum += waterScore * 0.15;
+    totalWeight += 0.15;
+  }
+
+  if (todayDopamineLog) {
+    const dopamineScore = todayDopamineLog.dopamineScore !== undefined ? todayDopamineLog.dopamineScore : 100;
+    weightedScoreSum += dopamineScore * 0.20;
+    totalWeight += 0.20;
+  }
+
+  if (todayMoodLog) {
+    const moodScore = todayMoodLog.mood * 20;
+    weightedScoreSum += moodScore * 0.10;
+    totalWeight += 0.10;
+  }
+
+  const lifeScore = totalWeight > 0 ? Math.round(weightedScoreSum / totalWeight) : 0;
 
   // 2. Calculate Burnout Probability
-  let burnoutProb = 10;
+  let burnoutProb = 0;
+  let hasBurnoutData = false;
+
   if (sleepLogs.length > 0) {
+    hasBurnoutData = true;
     const avgSleepRecent = sleepLogs.slice(0, 3).reduce((acc, l) => acc + l.duration, 0) / Math.min(3, sleepLogs.length);
     if (avgSleepRecent < 6) burnoutProb += 25;
     else if (avgSleepRecent < 7) burnoutProb += 10;
   }
   if (tasks.length > 0) {
+    hasBurnoutData = true;
     const totalPossibleCompletions = tasks.length * 7;
     let recentCompletions = 0;
     const today = new Date();
@@ -267,23 +322,42 @@ export const getAISuggestions = async (req, res) => {
     const recentRate = totalPossibleCompletions > 0 ? (recentCompletions / totalPossibleCompletions) * 100 : 100;
     if (recentRate < 35) burnoutProb += 20;
   }
-  if (todayMoodLog && todayMoodLog.mood <= 2) burnoutProb += 20;
-  else if (moodLogs.length > 0 && moodLogs[0].mood <= 2) burnoutProb += 15;
-  if (todaySleepLog && todaySleepLog.restlessness >= 4) burnoutProb += 15;
-  if (todayDopamineLog && todayDopamineLog.totalMinutes > 150) burnoutProb += 15;
+  if (todayMoodLog) {
+    hasBurnoutData = true;
+    if (todayMoodLog.mood <= 2) burnoutProb += 20;
+  } else if (moodLogs.length > 0) {
+    hasBurnoutData = true;
+    if (moodLogs[0].mood <= 2) burnoutProb += 15;
+  }
+  if (todaySleepLog) {
+    hasBurnoutData = true;
+    if (todaySleepLog.restlessness >= 4) burnoutProb += 15;
+  }
+  if (todayDopamineLog) {
+    hasBurnoutData = true;
+    if (todayDopamineLog.totalMinutes > 150) burnoutProb += 15;
+  }
 
-  burnoutProb = Math.min(99, Math.max(5, burnoutProb));
+  if (hasBurnoutData) {
+    burnoutProb = Math.min(99, Math.max(5, burnoutProb + 10));
+  } else {
+    burnoutProb = 0;
+  }
 
   // 3. Dynamic Schedule suggestion (AI Life Operator)
-  let lifeOperatorSuggestion = "Daily routine balanced. Maintain standard workloads and focus blocks tomorrow.";
-  if (burnoutProb > 65) {
-    lifeOperatorSuggestion = `High Burnout Risk detected (${burnoutProb}%). Workload reduced: Suggest lowering tomorrow's focus tasks by 30%, prioritizing mild revision, and locking in a 15-minute relaxation window.`;
-  } else if (todaySleepLog && todaySleepLog.duration < 6) {
-    lifeOperatorSuggestion = `Poor Sleep Logged (${todaySleepLog.duration}h). Workload adjusted: focus blocks shifted later, active physical tasks reduced by 20%, and light study recommended to avoid cognitive overload.`;
-  } else if (todayDopamineLog && todayDopamineLog.dopamineScore < 50) {
-    lifeOperatorSuggestion = `Elevated distraction spikes logged today. Focus blocks rescheduled: Recommend activating Grayscale Focus Mode, setting single-task milestones, and doing a 10-minute digital detox.`;
-  } else if (taskComponent > 80) {
-    lifeOperatorSuggestion = "Peak Execution State! Momentum is high. Suggest scheduling focus blocks for your most complex subjects first thing tomorrow morning.";
+  let lifeOperatorSuggestion = "";
+  if (totalWeight > 0) {
+    if (burnoutProb > 65) {
+      lifeOperatorSuggestion = `High Burnout Risk detected (${burnoutProb}%). Workload reduced: Suggest lowering tomorrow's focus tasks by 30%, prioritizing mild revision, and locking in a 15-minute relaxation window.`;
+    } else if (todaySleepLog && todaySleepLog.duration < 6) {
+      lifeOperatorSuggestion = `Poor Sleep Logged (${todaySleepLog.duration}h). Workload adjusted: focus blocks shifted later, active physical tasks reduced by 20%, and light study recommended to avoid cognitive overload.`;
+    } else if (todayDopamineLog && todayDopamineLog.dopamineScore < 50) {
+      lifeOperatorSuggestion = `Elevated distraction spikes logged today. Focus blocks rescheduled: Recommend activating Grayscale Focus Mode, setting single-task milestones, and doing a 10-minute digital detox.`;
+    } else if (tasks.length > 0 && (tasks.filter(t => t.completedDates?.includes(todayStr)).length / tasks.length) > 0.8) {
+      lifeOperatorSuggestion = "Peak Execution State! Momentum is high. Suggest scheduling focus blocks for your most complex subjects first thing tomorrow morning.";
+    } else {
+      lifeOperatorSuggestion = "Daily routine balanced. Maintain standard workloads and focus blocks tomorrow.";
+    }
   }
 
   if (apiKey) {
@@ -304,6 +378,10 @@ export const getAISuggestions = async (req, res) => {
         `${l.date}: Mood ${l.mood}/5, Notes: ${l.reflection || 'None'}`
       ).join('\n');
 
+      const transactionSummary = transactions.slice(0, 10).map(t =>
+        `${t.date}: ${t.type.toUpperCase()} - ${t.category} (₹${t.amount}) ${t.description ? `- ${t.description}` : ''}`
+      ).join('\n');
+
       const goal = user.ultimateGoal || { title: 'Not Set', description: 'None', targetDate: 'N/A' };
 
       const prompt = `You are a premium, highly scientific AI Life Coach. Analyze this user's data and provide a concise, direct, clinical and motivational summary (max 200 words).
@@ -312,8 +390,9 @@ Goal Title: "${goal.title}"
 Goal Description: "${goal.description}"
 Goal Target Date: ${goal.targetDate}
 
-Analyze their recent habits, daily task completions, sleep quality/scores, and fitness logs.
-Provide a clear analysis on whether they are "doing well" or "need to work harder". Give specific, actionable adjustments. Do not use emojis, keep the tone minimalist and professional.
+Analyze their overall productivity: their recent habits, daily task completions, sleep quality/scores, mood, fitness logs, and financial transactions.
+Evaluate their financial health: total income (₹${totalIncome}), total expenses (₹${totalExpenses}), net savings (₹${netSavings}), and savings rate (${savingsRate}%).
+Provide a holistic evaluation of their discipline, focus, and productivity. Analyze if they are "doing well" or "need to work harder", and give specific, actionable adjustments. Do not use emojis, keep the tone minimalist, professional, and elite.
 
 User Stats: Height ${user.height}cm, Target Weight ${user.targetWeight}kg.
 Recent Sleep History:
@@ -323,10 +402,12 @@ ${taskSummary || 'No data'}
 Recent Fitness History:
 ${fitnessSummary || 'No data'}
 Recent Mood Logs:
-${moodSummary || 'No data'}`;
+${moodSummary || 'No data'}
+Recent Financial Transactions:
+${transactionSummary || 'No data'}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -384,7 +465,7 @@ For example, instead of "Study Physics" suggest "Open Chapter 3 and solve only 2
 Keep the suggestion to a single brief sentence of maximum 20 words. Do not use emojis, keep the tone minimalist and direct.`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -412,4 +493,135 @@ Keep the suggestion to a single brief sentence of maximum 20 words. Do not use e
   }
 
   res.status(200).json({ microStep });
+};
+
+export const generateStudyRoadmap = async (req, res) => {
+  const { targetExam, examDate, weakSubjects, availableHours } = req.body;
+  const userId = req.userId;
+
+  const user = db.findOne('users', u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0';
+  let generatedRoadmap = '';
+
+  if (apiKey) {
+    try {
+      const prompt = `You are a world-class AI Study Strategist and Exam Performance Consultant.
+The student is preparing for: "${targetExam}"
+Target Exam Date: ${examDate || 'Not specified'}
+Weak Subjects/Topics: "${weakSubjects || 'All general topics'}"
+Available Daily Study Hours: ${availableHours} hours
+
+Generate an advanced, highly realistic, milestone-based adaptive roadmap, weak-subject spacing loops, and burnout prevention tips.
+Provide structured layout blocks (e.g. Phase 1, Phase 2, Revision loops). Limit to 250 words. Do not use emojis, keep the tone minimalist, clinical, and elite.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        generatedRoadmap = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } else {
+        console.error('Gemini API call failed for study strategist:', response.status);
+      }
+    } catch (error) {
+      console.error('Error invoking Gemini for study strategist:', error);
+    }
+  }
+
+  if (!generatedRoadmap) {
+    // Heuristic fallback
+    generatedRoadmap = `[Adaptive Local Roadmap: ${targetExam}]\n\n` +
+      `• PHASE 1 (Core Focus): Dedicate 60% of your daily ${availableHours}h block to [${weakSubjects || 'weak topics'}] revision.\n` +
+      `• PHASE 2 (Spaced Recall): Solve mock tests every 3 days. Dedicate 2 hours to active diagnostic corrections.\n` +
+      `• RECOVERY: Take a 15-minute screen-free walk after every 90-minute focus study block to avoid early burnout.`;
+  }
+
+  // Save to db
+  const existingPlan = db.findOne('studyPlans', plan => plan.userId === userId);
+
+  let result;
+  if (existingPlan) {
+    db.update('studyPlans', plan => plan.id === existingPlan.id, {
+      targetExam,
+      examDate,
+      weakSubjects,
+      availableHours: Number(availableHours || 4),
+      aiRoadmap: generatedRoadmap
+    });
+    result = db.findOne('studyPlans', plan => plan.id === existingPlan.id);
+  } else {
+    result = db.insert('studyPlans', {
+      userId,
+      targetExam,
+      examDate,
+      weakSubjects,
+      availableHours: Number(availableHours || 4),
+      aiRoadmap: generatedRoadmap
+    });
+  }
+
+  res.status(200).json(result);
+};
+
+export const getAICompanionResponse = async (req, res) => {
+  const { message, context } = req.body;
+  const userId = req.userId;
+
+  const user = db.findOne('users', u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0';
+  let replyText = '';
+
+  if (apiKey) {
+    try {
+      const prompt = `You are Aria, a premium supportive AI Companion inside the Growth tracking application. 
+Your goal is to help the student build discipline, consistency, and exam readiness.
+Current User Context: ${context || 'No logs loaded yet.'}
+
+Instructions:
+1. Provide clinical, supportive, and elite motivational responses.
+2. Keep it brief (under 80 words).
+3. Do NOT use emojis.
+4. Do NOT say you are an AI assistant; you are Aria, their growth companion.
+
+User message: "${message}"`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        replyText = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } else {
+        console.error('Gemini API call failed for companion:', response.status);
+      }
+    } catch (e) {
+      console.error('Error invoking Gemini for companion:', e);
+    }
+  }
+
+  if (!replyText) {
+    replyText = 'I am here. Let us stay aligned with our study strategizer roadmap.';
+  }
+
+  res.status(200).json({ replyText: replyText.trim() });
 };
