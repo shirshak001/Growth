@@ -24,6 +24,7 @@ dist/
 
 # Databases
 backend/data/*.json
+scripts/*.png
 
 # IDEs and editors
 .idea/
