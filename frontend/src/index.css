@@ -841,19 +841,21 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   .sidebar {
     position: fixed;
     top: auto !important;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100% !important;
-    height: 64px !important;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    width: calc(100% - 24px) !important;
+    height: 66px !important;
     flex-direction: row !important;
     border-right: none !important;
-    border-top: 1px solid var(--border-color) !important;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
     z-index: 1000 !important;
-    background: rgba(18, 20, 29, 0.95) !important;
+    background: rgba(15, 17, 26, 0.9) !important;
     backdrop-filter: blur(20px) !important;
     overflow: hidden !important;
+    padding: 6px !important;
   }
 
   .sidebar-logo {
@@ -868,7 +870,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     height: 100% !important;
     justify-content: space-around !important;
     align-items: center !important;
-    gap: 0 !important;
+    gap: 6px !important;
   }
 
   .nav-item {
@@ -879,15 +881,37 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 4px !important;
-    padding: 8px 0 !important;
+    gap: 3px !important;
+    padding: 4px 0 !important;
     text-align: center !important;
-    font-size: 10px !important;
-    border-radius: 0 !important;
+    border-radius: 14px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid transparent !important;
+  }
+
+  .nav-item:active {
+    transform: scale(0.92) !important;
+  }
+
+  .nav-item.active {
+    background: rgba(99, 102, 241, 0.08) !important;
+    border-color: rgba(99, 102, 241, 0.15) !important;
+    color: var(--color-primary) !important;
   }
 
   .nav-item span {
-    display: none !important; /* Hide text labels on mobile bottom bar */
+    display: block !important; /* Show small labels for clarity */
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    opacity: 0.6 !important;
+    margin-top: 1px !important;
+    letter-spacing: 0.2px !important;
+    transition: opacity 0.2s ease !important;
+  }
+
+  .nav-item.active span {
+    opacity: 1 !important;
+    color: var(--color-primary) !important;
   }
 
   .sidebar-user {
@@ -899,9 +923,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     margin-left: 0 !important;
     height: auto !important;
     min-height: 100vh;
-    padding-bottom: 74px !important; /* Space for bottom nav */
+    padding-bottom: 90px !important; /* Space for floating bottom nav */
     overflow: visible !important;
   }
+
 
   .main-header {
     padding: 0 16px !important;
