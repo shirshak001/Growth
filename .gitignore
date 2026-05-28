@@ -38,3 +38,8 @@ scripts/*.png
 .system_generated/
 web-app_nextjs_javascript_hello-world/
 
+# Kaggle dataset
+.cache/
+*.csv
+kagglehub/
+
