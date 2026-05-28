@@ -28,7 +28,7 @@ services:
     name: growth-frontend
     env: static
     buildCommand: npm run build
-    publishDir: dist
+    publishDir: frontend/dist
     envVars:
       - key: VITE_API_BASE
         value: https://growth-backend.onrender.com/api

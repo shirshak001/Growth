@@ -43,7 +43,10 @@ registerRoutes('');
 
 // Serve static assets in production (any environment other than development)
 if (process.env.NODE_ENV !== 'development') {
-  const distPath = path.join(__dirname, '../dist');
+  let distPath = path.join(__dirname, '../frontend/dist');
+  if (!fs.existsSync(path.resolve(distPath, 'index.html'))) {
+    distPath = path.join(__dirname, '../dist');
+  }
   const indexHtmlPath = path.resolve(distPath, 'index.html');
   
   if (fs.existsSync(indexHtmlPath)) {
