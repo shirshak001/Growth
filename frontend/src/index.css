@@ -51,6 +51,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scroll lock when menu drawer is open */
+body.menu-open, html.menu-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+body.menu-open .page-container,
+body.menu-open .inner-column,
+body.menu-open .main-content,
+body.menu-open .main-wrapper {
+  overflow: hidden !important;
+}
+
 button, input, select, textarea {
   font-family: inherit;
   color: inherit;
@@ -831,6 +844,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     overflow-x: hidden !important;
   }
 
+  /* Scroll lock overrides when menu is open */
+  html.menu-open, body.menu-open {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
   .app-layout {
     flex-direction: column;
     height: auto !important;
@@ -841,21 +860,25 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   .sidebar {
     position: fixed;
     top: auto !important;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    width: calc(100% - 24px) !important;
-    height: 66px !important;
+    bottom: 20px;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: min(440px, calc(100% - 32px)) !important;
+    height: 70px !important;
     flex-direction: row !important;
     border-right: none !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     z-index: 1000 !important;
-    background: rgba(15, 17, 26, 0.9) !important;
-    backdrop-filter: blur(20px) !important;
-    overflow: hidden !important;
-    padding: 6px !important;
+    background: rgba(18, 20, 29, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    overflow: visible !important;
+    padding: 6px 12px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .sidebar-logo {
@@ -870,23 +893,26 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     height: 100% !important;
     justify-content: space-around !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
   }
 
   .nav-item {
     flex: 1 !important;
     width: auto !important;
-    height: 100% !important;
+    height: 48px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 3px !important;
+    gap: 2px !important;
     padding: 4px 0 !important;
     text-align: center !important;
-    border-radius: 14px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 16px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border: 1px solid transparent !important;
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    position: relative !important;
   }
 
   .nav-item:active {
@@ -894,24 +920,45 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
 
   .nav-item.active {
-    background: rgba(99, 102, 241, 0.08) !important;
-    border-color: rgba(99, 102, 241, 0.15) !important;
+    background: rgba(99, 102, 241, 0.12) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
     color: var(--color-primary) !important;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15) !important;
+  }
+
+  .nav-item svg {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  .nav-item.active svg {
+    transform: translateY(-1px) scale(1.08) !important;
   }
 
   .nav-item span {
-    display: block !important; /* Show small labels for clarity */
-    font-size: 9px !important;
+    display: block !important;
+    font-size: 10px !important;
     font-weight: 600 !important;
     opacity: 0.6 !important;
     margin-top: 1px !important;
     letter-spacing: 0.2px !important;
-    transition: opacity 0.2s ease !important;
+    transition: all 0.25s ease !important;
   }
 
   .nav-item.active span {
     opacity: 1 !important;
     color: var(--color-primary) !important;
+    font-weight: 700 !important;
+  }
+
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    width: 4px;
+    height: 4px;
+    background-color: var(--color-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--color-primary);
   }
 
   .sidebar-user {
@@ -923,7 +970,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     margin-left: 0 !important;
     height: auto !important;
     min-height: 100vh;
-    padding-bottom: 90px !important; /* Space for floating bottom nav */
+    padding-bottom: 110px !important; /* Space for floating bottom nav */
     overflow: visible !important;
   }
 

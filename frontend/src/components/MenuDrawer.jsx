@@ -26,12 +26,15 @@ const MenuDrawer = ({ isOpen, onClose, activeTab, setActiveTab }) => {
 
   React.useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('menu-open');
+      document.documentElement.classList.add('menu-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
+      document.documentElement.classList.remove('menu-open');
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
+      document.documentElement.classList.remove('menu-open');
     };
   }, [isOpen]);
 

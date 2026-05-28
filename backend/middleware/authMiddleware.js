@@ -19,32 +19,34 @@ if (isAuth0Configured) {
 }
 
 export const protect = (req, res, next) => {
-  if (isAuth0Configured) {
-    // Use Auth0 token verification
-    checkJwt(req, res, (err) => {
-      if (err) {
-        console.error('Auth0 token validation failed:', err.message);
-        return res.status(401).json({ message: 'Not authorized, token failed' });
-      }
-      req.userId = req.auth.payload.sub;
-      next();
-    });
-  } else {
-    // Fallback to local JWT token verification
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      try {
-        token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.userId = decoded.id;
-        return next();
-      } catch (error) {
-        console.error('Local Token verification error:', error.message);
-        return res.status(401).json({ message: 'Not authorized, token failed' });
-      }
-    }
-    if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' });
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+
+  // 1. Try local JWT token verification first
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.id;
+    return next();
+  } catch (error) {
+    // 2. If local verification fails, fall back to Auth0 if configured
+    if (isAuth0Configured) {
+      return checkJwt(req, res, (err) => {
+        if (err) {
+          console.error('Auth0 token validation failed:', err.message);
+          return res.status(401).json({ message: 'Not authorized, token failed' });
+        }
+        req.userId = req.auth.payload.sub;
+        next();
+      });
+    } else {
+      console.error('Local Token verification error:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 };
