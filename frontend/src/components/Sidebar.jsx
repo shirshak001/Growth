@@ -4,28 +4,17 @@ import {
   LayoutDashboard, 
   Dumbbell, 
   Brain, 
-  BookOpen,
-  TrendingUp, 
-  Trophy,
-  Settings, 
-  LogOut,
-  CheckSquare,
-  Landmark
+  CheckSquare
 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'tasks', label: 'Tasks & Logging', icon: CheckSquare },
-    { id: 'fitness', label: 'Fitness & Health', icon: Dumbbell },
-    { id: 'mindset', label: 'Self-Development', icon: Brain },
-    { id: 'strategist', label: 'Study Strategist', icon: BookOpen },
-    { id: 'competitive', label: 'Competitive Arena', icon: Trophy },
-    { id: 'finance', label: 'Finance Planner', icon: Landmark },
-    { id: 'analytics', label: 'Analytics & Growth', icon: TrendingUp },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+    { id: 'fitness', label: 'Fitness', icon: Dumbbell },
+    { id: 'mindset', label: 'Companion', icon: Brain },
   ];
 
   return (
@@ -56,9 +45,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             <span className="user-name">{user.name}</span>
             <span className="user-email">{user.email}</span>
           </div>
-          <button onClick={logout} className="btn-icon" title="Sign Out">
-            <LogOut size={16} />
-          </button>
         </div>
       )}
     </aside>
@@ -66,3 +52,4 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 };
 
 export default Sidebar;
+

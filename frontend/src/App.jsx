@@ -7,16 +7,18 @@ import Fitness from './pages/Fitness';
 import SelfDevelopment from './pages/SelfDevelopment';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
-import { LogOut, Zap } from 'lucide-react';
+import { Zap, Menu } from 'lucide-react';
 import StudyStrategist from './pages/StudyStrategist';
 import Competitive from './pages/Competitive';
 import TaskManager from './pages/TaskManager';
 import Finance from './pages/Finance';
+import MenuDrawer from './components/MenuDrawer';
 
 const NavigationContainer = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [lowDopamineMode, setLowDopamineMode] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (loading) {
     return (
@@ -112,9 +114,6 @@ const NavigationContainer = () => {
                 <Zap size={11} /> {user.notifications.length} Alerts
               </button>
             )}
-            <span className="session-name" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Session: <strong>{user.name}</strong>
-            </span>
             <button 
               onClick={() => setLowDopamineMode(!lowDopamineMode)} 
               className={`btn-icon ${lowDopamineMode ? 'active' : ''}`} 
@@ -128,8 +127,13 @@ const NavigationContainer = () => {
             >
               <Zap size={14} />
             </button>
-            <button onClick={logout} className="btn-icon" title="Sign Out" style={{ padding: '6px' }}>
-              <LogOut size={14} style={{ color: 'var(--color-danger)' }} />
+            <button 
+              onClick={() => setMenuOpen(true)} 
+              className="btn-icon" 
+              title="Open Growth Menu" 
+              style={{ padding: '6px' }}
+            >
+              <Menu size={16} style={{ color: 'var(--text-primary)' }} />
             </button>
           </div>
         </header>
@@ -138,9 +142,18 @@ const NavigationContainer = () => {
           {renderContent()}
         </main>
       </div>
+
+      {/* Slide-out Navigation & Profile Drawer */}
+      <MenuDrawer 
+        isOpen={menuOpen} 
+        onClose={() => setMenuOpen(false)} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+      />
     </div>
   );
 };
+
 
 function App() {
   return (

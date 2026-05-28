@@ -36,3 +36,5 @@ scripts/*.png
 *.sw?
 .gemini/
 .system_generated/
+web-app_nextjs_javascript_hello-world/
+
