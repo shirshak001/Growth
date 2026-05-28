@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 // Load environmental variables
 dotenv.config();
@@ -42,12 +43,26 @@ registerRoutes('');
 
 // Serve static assets in production (any environment other than development)
 if (process.env.NODE_ENV !== 'development') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  const distPath = path.join(__dirname, '../dist');
+  const indexHtmlPath = path.resolve(distPath, 'index.html');
   
-  // Any non-API route should serve index.html
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
-  });
+  if (fs.existsSync(indexHtmlPath)) {
+    app.use(express.static(distPath));
+    
+    // Any non-API route should serve index.html
+    app.get('*', (req, res) => {
+      res.sendFile(indexHtmlPath);
+    });
+  } else {
+    // Standalone API deployment fallback (e.g. Render backend service)
+    app.get('/', (req, res) => {
+      res.json({ status: "healthy", message: "Growth API is online" });
+    });
+    
+    app.get('*', (req, res) => {
+      res.status(404).json({ message: "Not Found - API is online, but static frontend assets are missing." });
+    });
+  }
 } else {
   // Base route for development
   app.get('/', (req, res) => {
