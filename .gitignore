@@ -23,7 +23,8 @@ dist/
 .env.production.local
 
 # Databases
-backend/data/*.json
+# We commit our seeded JSON databases to Git so they persist across ephemeral cloud service resets (e.g. Render restarts)
+# backend/data/*.json
 scripts/*.png
 
 # IDEs and editors

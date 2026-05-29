@@ -249,7 +249,7 @@ export const getAISuggestions = async (req, res) => {
   }
 
   // Fallback to process.env.GEMINI_API_KEY if user has not specified one
-  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0';
   let geminiAdvice = '';
   
   // Resolve today's date string
@@ -407,7 +407,7 @@ Recent Financial Transactions:
 ${transactionSummary || 'No data'}`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -454,7 +454,7 @@ export const breakTaskWithAI = async (req, res) => {
     return res.status(404).json({ message: 'User not found' });
   }
 
-  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY;
+  const apiKey = user.geminiApiKey || process.env.GEMINI_API_KEY || 'AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0';
   let microStep = '';
 
   if (apiKey) {
@@ -465,7 +465,7 @@ For example, instead of "Study Physics" suggest "Open Chapter 3 and solve only 2
 Keep the suggestion to a single brief sentence of maximum 20 words. Do not use emojis, keep the tone minimalist and direct.`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -519,7 +519,7 @@ Generate an advanced, highly realistic, milestone-based adaptive roadmap, weak-s
 Provide structured layout blocks (e.g. Phase 1, Phase 2, Revision loops). Limit to 250 words. Do not use emojis, keep the tone minimalist, clinical, and elite.`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -600,7 +600,7 @@ Instructions:
 User message: "${message}"`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

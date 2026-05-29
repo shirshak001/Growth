@@ -1,0 +1,212 @@
+[
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-02",
+    "waterIntake": 1500,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-02"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-03",
+    "waterIntake": 2000,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-03"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-04",
+    "waterIntake": 1500,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-04"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-05",
+    "waterIntake": 1500,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-05"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-06",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-06"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-07",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-07"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-08",
+    "waterIntake": 1500,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-08"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-09",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-09"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-10",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-10"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-11",
+    "waterIntake": 1500,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-11"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-12",
+    "waterIntake": 1500,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-12"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-13",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-13"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-14",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-14"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-15",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-15"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-16",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-16"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-17",
+    "waterIntake": 2000,
+    "weight": 60.6,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-17"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-18",
+    "waterIntake": 1500,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-18"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-19",
+    "waterIntake": 2000,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-19"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-20",
+    "waterIntake": 2000,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-20"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-21",
+    "waterIntake": 2000,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-21"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-22",
+    "waterIntake": 2000,
+    "weight": 60.7,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-22"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-23",
+    "waterIntake": 1500,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-23"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-24",
+    "waterIntake": 1500,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-24"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-25",
+    "waterIntake": 1500,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-25"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-26",
+    "waterIntake": 2000,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-26"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-27",
+    "waterIntake": 2000,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-27"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-28",
+    "waterIntake": 2000,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-28"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-29",
+    "waterIntake": 1500,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-29"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-30",
+    "waterIntake": 2000,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-30"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-31",
+    "waterIntake": 2000,
+    "weight": 60.8,
+    "id": "kaggle-fitness-1779799208603-8psl66o5f-2025-12-31"
+  }
+]

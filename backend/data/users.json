@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Shirshak",
+    "email": "shirshakmondaljspbuet@gmail.com",
+    "password": "$2a$10$4aKhSwN0cj4UNnhgjBY08ucHX/cKcimlxlZOUI6h2EABUYd4gYugK",
+    "height": 174,
+    "targetWeight": 58,
+    "createdAt": "2026-05-26T12:40:08.602Z",
+    "id": "1779799208603-8psl66o5f",
+    "geminiApiKey": "AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0",
+    "gender": "other"
+  },
+  {
+    "name": "Shirshak",
+    "email": "sparxavalon1234567890@gmail.com",
+    "password": "$2a$10$gDkJyBEor3mcsQ2xT3q3eev0PMTBL1fVihuMUhe3rd7EZiABu9si2",
+    "height": 170,
+    "targetWeight": 70,
+    "gender": "male",
+    "ultimateGoal": {
+      "title": "",
+      "targetDate": "",
+      "description": ""
+    },
+    "createdAt": "2026-05-26T15:55:59.289Z",
+    "id": "1779810959289-xjo071817",
+    "geminiApiKey": "AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0"
+  },
+  {
+    "name": "Shirshak",
+    "email": "sparxavalon0123456789@gmail.com",
+    "password": "$2a$10$3gygA/Jznm0PW5OKxJJpzub1PtWGb3ikmqqOJ4bKlEd5f303SD2E6",
+    "height": 170,
+    "targetWeight": 70,
+    "gender": "male",
+    "ultimateGoal": {
+      "title": "",
+      "targetDate": "",
+      "description": ""
+    },
+    "createdAt": "2026-05-26T16:14:21.370Z",
+    "id": "1779812061382-ioikhr8sl",
+    "geminiApiKey": "AIzaSyBFMI3frSYOwOAGZd75FqV25j_oWPuf9p0"
+  },
+  {
+    "name": "Shirshak",
+    "email": "anjalik943122@gmail.com",
+    "password": "$2a$10$PAVJ.MHXQXwe/Gum90zN0ueK3u8pgsK.7qxGtt3ymtc7Ql7dRsCcy",
+    "height": 170,
+    "targetWeight": 70,
+    "gender": "male",
+    "ultimateGoal": {
+      "title": "",
+      "targetDate": "",
+      "description": ""
+    },
+    "createdAt": "2026-05-28T18:04:04.613Z",
+    "id": "1779991444613-bxurwlzuf"
+  }
+]

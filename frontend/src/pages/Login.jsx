@@ -8,7 +8,7 @@ const Login = () => {
   
   // Form states
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(localStorage.getItem('growth_remembered_email') || '');
   const [password, setPassword] = useState('');
   const [gender, setGender] = useState('male');
   const [error, setError] = useState('');
@@ -26,6 +26,8 @@ const Login = () => {
       } else {
         await login(email, password);
       }
+      // Save email for pre-fill if login/register was successful
+      localStorage.setItem('growth_remembered_email', email);
     } catch (err) {
       setError(err.message || 'An error occurred');
     } finally {

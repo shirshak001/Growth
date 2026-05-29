@@ -1,0 +1,302 @@
+[
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-02",
+    "sleepTime": "23:00",
+    "wakeTime": "06:02",
+    "duration": 7.0,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-02"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-03",
+    "sleepTime": "23:00",
+    "wakeTime": "06:34",
+    "duration": 7.6,
+    "quality": 4,
+    "sleepScore": 70,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-03"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-04",
+    "sleepTime": "23:00",
+    "wakeTime": "06:20",
+    "duration": 7.3,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-04"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-05",
+    "sleepTime": "23:00",
+    "wakeTime": "05:21",
+    "duration": 6.4,
+    "quality": 4,
+    "sleepScore": 90,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-05"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-06",
+    "sleepTime": "23:00",
+    "wakeTime": "05:58",
+    "duration": 7.0,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-06"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-07",
+    "sleepTime": "23:00",
+    "wakeTime": "07:48",
+    "duration": 8.8,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-07"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-08",
+    "sleepTime": "23:00",
+    "wakeTime": "06:23",
+    "duration": 7.4,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-08"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-09",
+    "sleepTime": "23:00",
+    "wakeTime": "06:16",
+    "duration": 7.3,
+    "quality": 4,
+    "sleepScore": 70,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-09"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-10",
+    "sleepTime": "23:00",
+    "wakeTime": "05:52",
+    "duration": 6.9,
+    "quality": 4,
+    "sleepScore": 80,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-10"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-11",
+    "sleepTime": "23:00",
+    "wakeTime": "06:10",
+    "duration": 7.2,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-11"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-12",
+    "sleepTime": "23:00",
+    "wakeTime": "05:24",
+    "duration": 6.4,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-12"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-13",
+    "sleepTime": "23:00",
+    "wakeTime": "07:49",
+    "duration": 8.8,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-13"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-14",
+    "sleepTime": "23:00",
+    "wakeTime": "07:12",
+    "duration": 8.2,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-14"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-15",
+    "sleepTime": "23:00",
+    "wakeTime": "07:07",
+    "duration": 8.1,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-15"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-16",
+    "sleepTime": "23:00",
+    "wakeTime": "06:22",
+    "duration": 7.4,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-16"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-17",
+    "sleepTime": "23:00",
+    "wakeTime": "05:20",
+    "duration": 6.3,
+    "quality": 4,
+    "sleepScore": 90,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-17"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-18",
+    "sleepTime": "23:00",
+    "wakeTime": "07:01",
+    "duration": 8.0,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-18"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-19",
+    "sleepTime": "23:00",
+    "wakeTime": "05:47",
+    "duration": 6.8,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-19"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-20",
+    "sleepTime": "23:00",
+    "wakeTime": "07:03",
+    "duration": 8.1,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-20"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-21",
+    "sleepTime": "23:00",
+    "wakeTime": "07:16",
+    "duration": 8.3,
+    "quality": 4,
+    "sleepScore": 80,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-21"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-22",
+    "sleepTime": "23:00",
+    "wakeTime": "05:58",
+    "duration": 7.0,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-22"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-23",
+    "sleepTime": "23:00",
+    "wakeTime": "04:20",
+    "duration": 5.3,
+    "quality": 4,
+    "sleepScore": 70,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-23"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-24",
+    "sleepTime": "23:00",
+    "wakeTime": "06:56",
+    "duration": 7.9,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-24"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-25",
+    "sleepTime": "23:00",
+    "wakeTime": "05:12",
+    "duration": 6.2,
+    "quality": 4,
+    "sleepScore": 80,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-25"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-26",
+    "sleepTime": "23:00",
+    "wakeTime": "06:32",
+    "duration": 7.5,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-26"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-27",
+    "sleepTime": "23:00",
+    "wakeTime": "07:57",
+    "duration": 9.0,
+    "quality": 4,
+    "sleepScore": 70,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-27"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-28",
+    "sleepTime": "23:00",
+    "wakeTime": "07:28",
+    "duration": 8.5,
+    "quality": 2,
+    "sleepScore": 50,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-28"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-29",
+    "sleepTime": "23:00",
+    "wakeTime": "05:02",
+    "duration": 6.0,
+    "quality": 4,
+    "sleepScore": 70,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-29"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-30",
+    "sleepTime": "23:00",
+    "wakeTime": "07:25",
+    "duration": 8.4,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-30"
+  },
+  {
+    "userId": "1779799208603-8psl66o5f",
+    "date": "2025-12-31",
+    "sleepTime": "23:00",
+    "wakeTime": "06:02",
+    "duration": 7.0,
+    "quality": 3,
+    "sleepScore": 60,
+    "id": "kaggle-sleep-1779799208603-8psl66o5f-2025-12-31"
+  }
+]
