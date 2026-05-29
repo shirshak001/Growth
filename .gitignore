@@ -43,3 +43,7 @@ web-app_nextjs_javascript_hello-world/
 *.csv
 kagglehub/
 
+# Firebase
+.firebase/
+firebase-debug.log
+
